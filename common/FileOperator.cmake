@@ -4,15 +4,19 @@ cmake_minimum_required(VERSION 3.0.2)
 function(concrete_file_download uri target_relative_path)
     set(_target ${CONCRETE_PROJECT_SOURCE_DIR}/${target_relative_path})
 
-    if (ARGV2)
-        file(${ARGV2} ${_target} _hash_value)
+    # check file
+    if (EXISTS ${_target})
+        if (ARGV2)
+            file(${ARGV2} ${_target} _hash_value)
 
-        if (NOT "${_hash_value}" STREQUAL "${ARGV3}")
-            file(REMOVE ${_target})
-            message(WARNING "File has been broken, removed")
+            if (NOT "${_hash_value}" STREQUAL "${ARGV3}")
+                file(REMOVE ${_target})
+                message(STATUS "${_target} has been broken, removed and redownload")
+            endif()
         endif()
     endif()
 
+    # download file
     if (NOT EXISTS ${_target})
         message(STATUS "DOWNLOADING ${uri}...")
 
@@ -26,6 +30,7 @@ function(concrete_file_download uri target_relative_path)
             message(FATAL_ERROR "Failed to download file ${uri}: ${ERR_MESSAGE}")
         endif ()
 
+        # check
         if (ARGV2)
             file(${ARGV2} ${_target} _hash_value)
 
