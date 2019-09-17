@@ -5,12 +5,15 @@ project(ConcreteUnitTest C CXX)
 
 set (CONCRETE_SORUCE_DIR ${CMAKE_SOURCE_DIR}/../..)
 
-include(${CONCRETE_SORUCE_DIR}/Concrete/common/Configure.cmake)
-include(${CONCRETE_SORUCE_DIR}/Concrete/common/FileOperator.cmake)
+include(${CONCRETE_SORUCE_DIR}/Concrete/Common/Configure.cmake)
+include(${CONCRETE_SORUCE_DIR}/Concrete/Common/FileOperator.cmake)
+
+# unit test framework
+include(${CONCRETE_SORUCE_DIR}/Concrete/UnitTest/UnitTest.cmake)
 
 # init
-concrete_init()
+concrete_init(${CMAKE_SOURCE_DIR}/../)
 
 concrete_file_download("https://github.com/Kitware/CMake/releases/download/v3.15.3/cmake-3.15.3-win64-x64.zip" "./cmake.zip")
 
-message(STATUS "CMAKE_ARCHIVE_OUTPUT_DIRECTORY=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
+concrete_utest_str_equal(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} ${CONCRETE_LIBRARY_DIR})
