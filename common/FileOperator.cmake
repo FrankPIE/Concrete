@@ -50,3 +50,25 @@ function(concrete_file_download)
         endif()
     endif()
 endfunction(concrete_file_download)
+
+# make dir function
+# ARGV0 relative_path
+function(concrete_make_dir)
+    if(NOT ARGV0)
+        message(FATAL_ERROR "bad call: few params, shoud pass relative_path")
+    endif()
+
+    set(_target ${CONCRETE_PROJECT_SOURCE_DIR}/${ARGV0})
+
+    if (EXISTS ${_target})
+        message(STATUS "${_target} has created")
+    else()
+        file(MAKE_DIRECTORY ${_target})
+
+        if (NOT EXISTS ${_target})
+            message(FATAL_ERROR "Create ${_target} failed!")
+        else()
+            message(STATUS "Create ${_target} OK!")
+        endif()
+    endif()
+endfunction(concrete_make_dir)
