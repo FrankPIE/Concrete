@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.0.2)
 # ARGV3 hash hex string 
 function(concrete_file_download)
     # params check
-    if (NOT ARGV0 OR NOT ARGV1)
+    if (${ARGC} LESS 2)
         message(FATAL_ERROR "bad call: few params, shoud pass url and relative_path")
     endif()
 
@@ -54,7 +54,7 @@ endfunction(concrete_file_download)
 # make dir function
 # ARGV0 relative_path
 function(concrete_make_dir)
-    if(NOT ARGV0)
+    if (${ARGC} LESS 1)
         message(FATAL_ERROR "bad call: few params, shoud pass relative_path")
     endif()
 

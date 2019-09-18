@@ -5,11 +5,11 @@ project(ConcreteUnitTest C CXX)
 
 set (CONCRETE_SORUCE_DIR ${CMAKE_SOURCE_DIR}/../..)
 
-include(${CONCRETE_SORUCE_DIR}/Concrete/Common/Configure.cmake)
-include(${CONCRETE_SORUCE_DIR}/Concrete/Common/FileOperator.cmake)
+include(${CONCRETE_SORUCE_DIR}/Concrete/lib/Configure.cmake)
+include(${CONCRETE_SORUCE_DIR}/Concrete/lib/FileOperator.cmake)
 
 # unit test framework
-include(${CONCRETE_SORUCE_DIR}/Concrete/UnitTest/UnitTest.cmake)
+include(${CONCRETE_SORUCE_DIR}/Concrete/lib/UnitTest.cmake)
 
 # init
 concrete_init(${CMAKE_SOURCE_DIR}/../)
