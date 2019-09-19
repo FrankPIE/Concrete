@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 3.0.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
 
 # project name forward declaration
-set(CONCRETE_PROJECT_NAME ${PROJECT_NAME} CACHE INTERNAL "Project name")
+SET(CONCRETE_PROJECT_NAME ${PROJECT_NAME} CACHE INTERNAL "Project name")
 
-set(CONCRETE_INIT_COMPLETED FALSE CACHE BOOL "Init Completed status" FORCE)
+SET(CONCRETE_INIT_COMPLETED FALSE CACHE BOOL "Init Completed status" FORCE)
 
 # macro to get platform info
-macro(_concrete_get_platform_info)
+MACRO(_CONCRETE_GET_PLATFORM_INFO)
     # host os info
-    if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    IF(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
         SET(CONCRETE_HOST_PLATFORM_NAME "windows" CACHE INTERNAL "Platform OS name")
         SET(CONCRETE_HOST_PLATFORM_WINDOWS TRUE CACHE BOOL "Platform flag" FORCE)
     ELSEIF(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
@@ -25,45 +25,55 @@ macro(_concrete_get_platform_info)
     else()
         set(CONCRETE_PLATFORM_COMPILER_TARGET x86 CACHE INTERNAL "Platform compiler target")
     endif(CMAKE_CL_64)
-endmacro(_concrete_get_platform_info)
+ENDMACRO(_CONCRETE_GET_PLATFORM_INFO)
 
 # macro to set project propertys
 # ARGV0. project root directory, default. ${CMAKE_SOURCE_DIR}
-macro(concrete_init)
-    _concrete_get_platform_info()
+MACRO(CONCRETE_INIT)
+    _CONCRETE_GET_PLATFORM_INFO()
 
-    if (NOT "" STREQUAL "${ARGV0}")
-        set(CONCRETE_PROJECT_SOURCE_DIR ${ARGV0} CACHE PATH "Project root directory" FORCE)
-    else()
-        message(STATUS "Project root directory will be set as default")
-        set(CONCRETE_PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR} CACHE PATH "Project root directory" FORCE)
-    endif()
+    IF (NOT "" STREQUAL "${ARGV0}")
+        SET(CONCRETE_PROJECT_SOURCE_DIR ${ARGV0} CACHE PATH "Project root directory" FORCE)
+    ELSE()
+        MESSAGE(STATUS "Project root directory will be set as default")
+        SET(CONCRETE_PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR} CACHE PATH "Project root directory" FORCE)
+    ENDIF()
 
-    set(CONCRETE_BINARY_DIR ${CONCRETE_PROJECT_SOURCE_DIR}/${CONCRETE_PLATFORM_COMPILER_TARGET}/bin CACHE PATH "Binary files generate directory" FORCE)
-    set(CONCRETE_LIBRARY_DIR ${CONCRETE_PROJECT_SOURCE_DIR}/${CONCRETE_PLATFORM_COMPILER_TARGET}/lib CACHE PATH "Library files generate directory" FORCE)
+    SET(CONCRETE_BINARY_DIR ${CONCRETE_PROJECT_SOURCE_DIR}/${CONCRETE_PLATFORM_COMPILER_TARGET}/bin CACHE PATH "Binary files generate directory" FORCE)
+    SET(CONCRETE_LIBRARY_DIR ${CONCRETE_PROJECT_SOURCE_DIR}/${CONCRETE_PLATFORM_COMPILER_TARGET}/lib CACHE PATH "Library files generate directory" FORCE)
 
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CONCRETE_LIBRARY_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CONCRETE_LIBRARY_DIR})
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CONCRETE_BINARY_DIR})    
+    SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CONCRETE_LIBRARY_DIR})
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CONCRETE_LIBRARY_DIR})
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CONCRETE_BINARY_DIR})    
 
-    set(CONCRETE_INIT_COMPLETED TRUE)
-endmacro()
+    SET(CONCRETE_INIT_COMPLETED TRUE)
+ENDMACRO()
 
-macro(concrete_set_module_path)
-    if (NOT ${CONCRETE_INIT_COMPLETED})
-        message(FATAL_ERROR "Libaray has not been initialized! please call concrete_init first!")
-    endif()
+MACRO(CONCRETE_SET_VERSION MAJOR MINOR PATCH)
+    SET(CONCRETE_MAJOR_VERSION ${MAJOR} CACHE INTERNAL "Software version major")
+    SET(CONCRETE_MINOR_VERSION ${MINOR} CACHE INTERNAL "Software version minor")
+    SET(CONCRETE_PATCH_VERSION ${PATCH} CACHE INTERNAL "Software version patch")
 
-    foreach(arg IN LISTS ARGN)
-        set(_target ${CONCRETE_PROJECT_SOURCE_DIR}/${arg})
-        list(APPEND CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}/${_target})
-    endforeach()
-endmacro(concrete_set_module_path)
+    SET(CONCRETE_VERSION "${CONCRETE_MAJOR_VERSION}.${CONCRETE_MINOR_VERSION}.${CONCRETE_PATCH_VERSION}" CACHE INTERNAL "Software version")
+ENDMACRO(CONCRETE_SET_VERSION)
 
-macro(concrete_set_version major minor patch)
-    set(CONCRETE_MAJOR_VERSION major CACHE INTERNAL "Software version major")
-    set(CONCRETE_MINOR_VERSION minor CACHE INTERNAL "Software version minor")
-    set(CONCRETE_PATCH_VERSION patch CACHE INTERNAL "Software version patch")
+MACRO(CONCRETE_SET_MODULE_PATH)
+    IF (NOT ${CONCRETE_INIT_COMPLETED})
+        MESSAGE(FATAL_ERROR "Libaray has not been initialized! please call concrete_init first!")
+    ENDIF()
 
-    set(CONCRETE_VERSION CACHE INTERNAL "Software version")
-endmacro(concrete_set_version)
+    FOREACH(ARG IN LISTS ARGN)
+        SET(_TARGET ${CONCRETE_PROJECT_SOURCE_DIR}/${ARG})
+        LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}/${_TARGET})
+    ENDFOREACH()
+ENDMACRO(CONCRETE_SET_MODULE_PATH)
+
+MACRO(CONCRETE_USE_FOLDERS)
+    IF (NOT ${CONCRETE_INIT_COMPLETED})
+        MESSAGE(FATAL_ERROR "Libaray has not been initialized! please call concrete_init first!")
+    ENDIF()
+
+    SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+
+    SET(CONCRETE_USE_FOLDERS TRUE CACHE BOOL "Use folders enable" FORCE)
+ENDMACRO(CONCRETE_USE_FOLDERS)

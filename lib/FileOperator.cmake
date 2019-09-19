@@ -1,74 +1,73 @@
-cmake_minimum_required(VERSION 3.0.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
 
 # file download function
 # ARGV0 uri
 # ARGV1 relative_path
 # ARGV2 hash algorithm
 # ARGV3 hash hex string 
-function(concrete_file_download)
-    # params check
-    if (${ARGC} LESS 2)
-        message(FATAL_ERROR "bad call: few params, shoud pass url and relative_path")
-    endif()
+FUNCTION(CONCRETE_FILE_DOWNLOAD URL RELATIVE_PATH)
+    IF (NOT ${CONCRETE_INIT_COMPLETED})
+        MESSAGE(FATAL_ERROR "Libaray has not been initialized! please call concrete_init first!")
+    ENDIF()
 
-    set(_target ${CONCRETE_PROJECT_SOURCE_DIR}/${ARGV1})
+    SET(_TARGET ${CONCRETE_PROJECT_SOURCE_DIR}/${ARGV1})
 
     # check file
-    if (EXISTS ${_target})
-        if (ARGV2)
-            file(${ARGV2} ${_target} _hash_value)
+    IF (EXISTS ${_TARGET})
+        IF (ARGV2)
+            FILE(${ARGV2} ${_TARGET} _HASH_VALUE)
 
-            if (NOT "${_hash_value}" STREQUAL "${ARGV3}")
-                file(REMOVE ${_target})
-                message(STATUS "${_target} has been broken, removed and redownload")
-            endif()
-        endif()
-    endif()
+            IF (NOT "${_HASH_VALUE}" STREQUAL "${ARGV3}")
+                FILE(REMOVE ${_TARGET})
+                MESSAGE(STATUS "${_TARGET} has been broken, removed and redownload")
+            ENDIF()
+        ENDIF()
+    ENDIF()
 
     # download file
-    if (NOT EXISTS ${_target})
-        message(STATUS "DOWNLOADING ${ARGV0}...")
+    IF (NOT EXISTS ${_TARGET})
+        MESSAGE(STATUS "DOWNLOADING ${ARGV0}...")
 
-        file(DOWNLOAD ${ARGV0} ${_target} SHOW_PROGRESS STATUS ERR)
+        FILE(DOWNLOAD ${ARGV0} ${_TARGET} SHOW_PROGRESS STATUS ERR)
 
-        list(GET ERR 0 ERR_CODE)
+        LIST(GET ERR 0 ERR_CODE)
         
-        if (ERR_CODE)
-            file(REMOVE ${_target})
-            list(GET ERR 1 ERR_MESSAGE)
-            message(FATAL_ERROR "Failed to download file ${ARGV0}: ${ERR_MESSAGE}")
-        endif ()
+        IF (ERR_CODE)
+            FILE(REMOVE ${_TARGET})
+            LIST(GET ERR 1 ERR_MESSAGE)
+            MESSAGE(FATAL_ERROR "Failed to download file ${ARGV0}: ${ERR_MESSAGE}")
+        ENDIF ()
 
         # check
-        if (ARGV2)
-            file(${ARGV2} ${_target} _hash_value)
+        IF (ARGV2)
+            FILE(${ARGV2} ${_TARGET} _HASH_VALUE)
 
-            if (NOT "${_hash_value}" STREQUAL "${ARGV3}")
-                file(REMOVE ${_target})
-                message(FATAL_ERROR "Failed to download file ${ARGV0}: file has been broken")
-            endif()
-        endif()
-    endif()
-endfunction(concrete_file_download)
+            IF (NOT "${_HASH_VALUE}" STREQUAL "${ARGV3}")
+                FILE(REMOVE ${_TARGET})
+                MESSAGE(FATAL_ERROR "Failed to download file ${ARGV0}: file has been broken")
+            ENDIF()
+        ENDIF()
+    ENDIF()
+ENDFUNCTION(CONCRETE_FILE_DOWNLOAD)
 
 # make dir function
 # ARGV0 relative_path
-function(concrete_make_dir)
-    if (${ARGC} LESS 1)
-        message(FATAL_ERROR "bad call: few params, shoud pass relative_path")
-    endif()
+FUNCTION(CONCRETE_MAKE_DIR RELATIVE_PATH)
+    IF (NOT ${CONCRETE_INIT_COMPLETED})
+        MESSAGE(FATAL_ERROR "Libaray has not been initialized! please call concrete_init first!")
+    ENDIF()
 
-    set(_target ${CONCRETE_PROJECT_SOURCE_DIR}/${ARGV0})
+    SET(_TARGET ${CONCRETE_PROJECT_SOURCE_DIR}/${ARGV0})
 
-    if (EXISTS ${_target})
-        message(STATUS "${_target} has created")
-    else()
-        file(MAKE_DIRECTORY ${_target})
+    IF (EXISTS ${_TARGET})
+        MESSAGE(STATUS "${_TARGET} has created")
+    ELSE()
+        FILE(MAKE_DIRECTORY ${_TARGET})
 
-        if (NOT EXISTS ${_target})
-            message(FATAL_ERROR "Create ${_target} failed!")
-        else()
-            message(STATUS "Create ${_target} OK!")
-        endif()
-    endif()
-endfunction(concrete_make_dir)
+        IF (NOT EXISTS ${_TARGET})
+            MESSAGE(FATAL_ERROR "Create ${_TARGET} failed!")
+        ELSE()
+            MESSAGE(STATUS "Create ${_TARGET} OK!")
+        ENDIF()
+    ENDIF()
+ENDFUNCTION(CONCRETE_MAKE_DIR)
