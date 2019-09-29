@@ -9,15 +9,103 @@
 	#error C++ compiler required.
 #endif
 
+// Stringify Macro
+#define @CONCRETE_MARCO_PREFIX@_STRINGIFY(x) 	@CONCRETE_MARCO_PREFIX@_DO_STRINGIFY(x)
+#define @CONCRETE_MARCO_PREFIX@_DO_STRINGIFY(x) #x
+
+#define @CONCRETE_MARCO_PREFIX@_VERSION @CONCRETE_MARCO_PREFIX@_STRINGIFY(@CONCRETE_VERSION@)
+
 // Debug flag
 #if defined(DEBUG) | defined(_DEBUG)
 	#define @CONCRETE_MARCO_PREFIX@_DEBUG
 #endif
 
-// Stringify Macro
-#define @CONCRETE_MARCO_PREFIX@_STRINGIFY(x) 	@CONCRETE_MARCO_PREFIX@_DO_STRINGIFY(x)
-#define @CONCRETE_MARCO_PREFIX@_DO_STRINGIFY(x) #x
+/////////////////////////////////////
+//
+// Preprocess for current Platform
+// Supported platform : 
+// windows linux darwin ios android
+//
+/////////////////////////////////////
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
-#define @CONCRETE_MARCO_PREFIX@VERSION @CONCRETE_MARCO_PREFIX@_STRINGIFY(@CONCRETE_VERSION@)
+// Begin OS Windows
+#define @CONCRETE_MARCO_PREFIX@_PLATFORM_WINDOWS
+
+// Win32 Unicode
+#if defined(UNICODE) || defined(_UNICODE)
+	#define @CONCRETE_MARCO_PREFIX@_UNICODE
+#endif	
+
+#if defined(_WIN64)
+	#define @CONCRETE_MARCO_PREFIX@_PLATFORM_WIN64
+#else
+	#define @CONCRETE_MARCO_PREFIX@_PLATFORM_WIN32
+#endif
+
+#ifdef CONCRETE_WIN32_SHUT_MIN_MAX
+	#ifndef NOMINMAX
+		#define NOMINMAX
+	#endif  /* NOMINMAX */
+#endif
+
+#ifndef WIN32_LEAN_AND_MEAN
+	#define WIN32_LEAN_AND_MEAN
+#endif
+
+// End OS Windows
+
+#endif
+
+/////////////////////////////////////
+//
+// Preprocess for current compiler
+// Supported compiler : 
+// clang, gcc, msvc
+//
+/////////////////////////////////////
+#if defined(__clang__)
+	#define @CONCRETE_MARCO_PREFIX@_COMPILER_CLANG
+#elif defined(__GNUC__)
+	#define @CONCRETE_MARCO_PREFIX@_COMPILER_GCC
+#elif defined(_MSC_VER)
+	#define @CONCRETE_MARCO_PREFIX@_COMPILER_MSVC
+
+	#define @CONCRETE_MARCO_PREFIX@_HAS_DECLSPEC
+#else
+	#error unknown compiler
+#endif
+
+// Compiler Target
+
+// Use Boost
+#ifdef CONCRETE_USE_BOOST
+
+// Forces all boost's libraries to be linked as dll
+#ifdef CONCRETE_USE_BOOST_ALL_DYN_LINK
+#ifndef BOOST_ALL_DYN_LINK
+#define BOOST_ALL_DYN_LINK
+#endif
+
+#endif
+
+#endif
+
+// Unused Macro
+#if defined(@CONCRETE_MARCO_PREFIX@_COMPILER_GCC)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED(a) do {__typeof__ (&a) __attribute__ ((unused)) __tmp = &a; } while(0)
+#elif defined(@CONCRETE_MARCO_PREFIX@_COMPILER_MSVC)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED(a) (a)
+#endif
+
+#define @CONCRETE_MARCO_PREFIX@_UNUSED1(a)                          @CONCRETE_MARCO_PREFIX@_UNUSED(a)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED2(a,b)                        @CONCRETE_MARCO_PREFIX@_UNUSED(a);            @CONCRETE_MARCO_PREFIX@_UNUSED(b)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED3(a,b,c)                      @CONCRETE_MARCO_PREFIX@_UNUSED2(a,c);         @CONCRETE_MARCO_PREFIX@_UNUSED(b)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED4(a,b,c,d)                    @CONCRETE_MARCO_PREFIX@_UNUSED3(a,c,d);       @CONCRETE_MARCO_PREFIX@_UNUSED(b)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED5(a1,a2,a3,a4,a5)             @CONCRETE_MARCO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MARCO_PREFIX@_UNUSED(a5)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED6(a1,a2,a3,a4,a5,a6)          @CONCRETE_MARCO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MARCO_PREFIX@_UNUSED2(a5,a6)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED7(a1,a2,a3,a4,a5,a6,a7)       @CONCRETE_MARCO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MARCO_PREFIX@_UNUSED3(a5,a6,a7)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED8(a1,a2,a3,a4,a5,a6,a7,a8)    @CONCRETE_MARCO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MARCO_PREFIX@_UNUSED4(a5,a6,a7,a8)
+#define @CONCRETE_MARCO_PREFIX@_UNUSED9(a1,a2,a3,a4,a5,a6,a7,a8,a9) @CONCRETE_MARCO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MARCO_PREFIX@_UNUSED5(a5,a6,a7,a8,a9)
 
 #endif
