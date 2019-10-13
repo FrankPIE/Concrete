@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
 
 # Re-define FOLDER property
-define_property(
+DEFINE_PROPERTY(
     TARGET
     PROPERTY FOLDER
     INHERITED
