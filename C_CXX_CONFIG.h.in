@@ -3,8 +3,8 @@
  * Do not modify
  */
 
-#ifndef _@CONCRETE_MACRO_PREFIX@_CONFIG_C_H_
-#define _@CONCRETE_MACRO_PREFIX@_CONFIG_C_H_
+#ifndef _@CONCRETE_MACRO_PREFIX@_CONFIG_H_
+#define _@CONCRETE_MACRO_PREFIX@_CONFIG_H_
 
 // Stringify Macro
 #define @CONCRETE_MACRO_PREFIX@_STRINGIFY(x) 	@CONCRETE_MACRO_PREFIX@_DO_STRINGIFY(x)
@@ -74,6 +74,8 @@
 	#error unknown compiler
 #endif
 
+// Compiler Target
+
 // API Exprot
 #ifdef @CONCRETE_MACRO_PREFIX@_HAS_DECLSPEC
 	#define @CONCRETE_MACRO_PREFIX@_API_EXPORT __declspec(dllexport)
@@ -106,5 +108,29 @@
 #define @CONCRETE_MACRO_PREFIX@_UNUSED7(a1,a2,a3,a4,a5,a6,a7)       @CONCRETE_MACRO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MACRO_PREFIX@_UNUSED3(a5,a6,a7)
 #define @CONCRETE_MACRO_PREFIX@_UNUSED8(a1,a2,a3,a4,a5,a6,a7,a8)    @CONCRETE_MACRO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MACRO_PREFIX@_UNUSED4(a5,a6,a7,a8)
 #define @CONCRETE_MACRO_PREFIX@_UNUSED9(a1,a2,a3,a4,a5,a6,a7,a8,a9) @CONCRETE_MACRO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MACRO_PREFIX@_UNUSED5(a5,a6,a7,a8,a9)
+
+#if !defined(__cplusplus)
+#else
+	// Use Boost
+	#ifdef CONCRETE_USE_BOOST
+		// Forces all boost's libraries to be linked as dll
+		#ifdef CONCRETE_USE_BOOST_ALL_DYN_LINK
+			#ifndef BOOST_ALL_DYN_LINK
+				#define BOOST_ALL_DYN_LINK
+			#endif
+		#endif
+	#endif
+
+	// Namespace
+	#ifdef CONCRETE_USE_NAME_SPACE
+		#define @CONCRETE_MACRO_PREFIX@_NAME_SPACE @CONCRETE_MAIN_NAME_SPACE@
+		#define @CONCRETE_MACRO_PREFIX@_NAME_SPACE_BEGIN namespace @CONCRETE_MACRO_PREFIX@_NAME_SPACE {
+		#define @CONCRETE_MACRO_PREFIX@_NAME_SPACE_END   } 
+	#else
+		#define @CONCRETE_MACRO_PREFIX@_NAME_SPACE 
+		#define @CONCRETE_MACRO_PREFIX@_NAME_SPACE_BEGIN 
+		#define @CONCRETE_MACRO_PREFIX@_NAME_SPACE_END 
+	#endif
+#endif
 
 #endif

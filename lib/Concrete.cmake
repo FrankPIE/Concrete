@@ -10,5 +10,4 @@ INCLUDE(ProjectOperator)
 # Config file
 INCLUDE(ConfigFileOptions)
 
-INCLUDE(CConfigFile)
-INCLUDE(CXXConfigFile)
+INCLUDE(CCXXConfigFile)
