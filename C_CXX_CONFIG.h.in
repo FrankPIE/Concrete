@@ -10,6 +10,10 @@
 #define @CONCRETE_MACRO_PREFIX@_STRINGIFY(x) 	@CONCRETE_MACRO_PREFIX@_DO_STRINGIFY(x)
 #define @CONCRETE_MACRO_PREFIX@_DO_STRINGIFY(x) #x
 
+#define @CONCRETE_MACRO_PREFIX@_JOIN(x, y) 	   @CONCRETE_MACRO_PREFIX@_DO_JOIN(x, y)
+#define @CONCRETE_MACRO_PREFIX@_DO_JOIN(x, y)  @CONCRETE_MACRO_PREFIX@_DO_JOIN2(x, y)
+#define @CONCRETE_MACRO_PREFIX@_DO_JOIN2(x, y) x##y
+
 #define @CONCRETE_MACRO_PREFIX@_VERSION @CONCRETE_MACRO_PREFIX@_STRINGIFY(@CONCRETE_VERSION@)
 
 // Debug flag
@@ -46,6 +50,18 @@
 	#endif  /* NOMINMAX */
 #endif
 
+#ifdef CONCRETE_WIN32_CRT_SECURE_NO_DEPRECATE
+	#ifndef _CRT_SECURE_NO_DEPRECATE
+		#define _CRT_SECURE_NO_DEPRECATE
+	#endif  /* _CRT_SECURE_NO_DEPRECATE */
+#endif
+
+#ifdef CONCRETE_WIN32_SCL_SECURE_NO_DEPRECATE
+	#ifndef _SCL_SECURE_NO_DEPRECATE
+		#define _SCL_SECURE_NO_DEPRECATE
+	#endif  /* _SCL_SECURE_NO_DEPRECATE */
+#endif
+
 #ifndef WIN32_LEAN_AND_MEAN
 	#define WIN32_LEAN_AND_MEAN
 #endif
@@ -63,18 +79,86 @@
 /////////////////////////////////////
 #if defined(__clang__)
 	#define @CONCRETE_MACRO_PREFIX@_COMPILER_CLANG
-	#define @CONCRETE_MACRO_PREFIX@_HAS_DECLSPEC
-#elif defined(__GNUC__)
-	#define @CONCRETE_MACRO_PREFIX@_COMPILER_GCC
-#elif defined(_MSC_VER)
-	#define @CONCRETE_MACRO_PREFIX@_COMPILER_MSVC
+	#define @CONCRETE_MACRO_PREFIX@_COMPILER_NAME clang
+
+	#define @CONCRETE_MACRO_PREFIX@_CLANG_VERSION @CONCRETE_MACRO_PREFIX@_JOIN(__clang_major__, __clang_minor__)
 
 	#define @CONCRETE_MACRO_PREFIX@_HAS_DECLSPEC
+
+#elif defined(__GNUC__)
+	#define @CONCRETE_MACRO_PREFIX@_COMPILER_GCC
+
+	#define @CONCRETE_MACRO_PREFIX@_GCC_VERSION @CONCRETE_MACRO_PREFIX@_JOIN(__GNUC__, __GNUC_MINOR__)
+
+#elif defined(_MSC_VER)
+	#define @CONCRETE_MACRO_PREFIX@_COMPILER_MSVC
+	#define @CONCRETE_MACRO_PREFIX@_COMPILER_NAME vc
+
+	#define @CONCRETE_MACRO_PREFIX@_HAS_DECLSPEC
+
+	#if _MSC_VER >= 1920
+		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 142
+	#elif _MSC_VER >= 1910
+		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 141
+	#elif _MSC_VER >= 1900
+		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 140
+	#elif _MSC_VER >= 1800
+		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 120
+	#elif _MSC_VER >= 1700
+		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 110
+	#elif _MSC_VER >= 1600
+		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 100
+	#elif _MSC_VER >= 1500
+		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 90
+	#elif _MSC_VER >= 1400 
+		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 80
+	#endif 
+
+	#if @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION >= 120
+		#define @CONCRETE_MACRO_PREFIX@_C99_BOOL_TYPE_SUPPORT
+	#endif
 #else
 	#error unknown compiler
 #endif
 
 // Compiler Target
+// TODO::Thumb Mode Supported
+#if defined(__arm__) || defined(_M_ARM)
+	// ARM
+	#define @CONCRETE_MACRO_PREFIX@_CPU_ARM
+	#define @CONCRETE_MACRO_PREFIX@_COMPILER_TARGET arm
+#elif defined(__aarch64__) || defined(__arm64__)
+	// ARM64
+	#define @CONCRETE_MACRO_PREFIX@_CPU_ARM64
+	#define @CONCRETE_MACRO_PREFIX@_COMPILER_TARGET arm64
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_AMD64_) || defined(_M_X64) || defined(_M_AMD64)
+	// x86-64
+	#define @CONCRETE_MACRO_PREFIX@_CPU_X64
+	#define @CONCRETE_MACRO_PREFIX@_CPU_X86_64
+	#define @CONCRETE_MACRO_PREFIX@_CPU_AMD64
+
+	#define @CONCRETE_MACRO_PREFIX@_COMPILER_TARGET x86_64
+#elif defined(__i386__) || defined(__i386) || defined(i386) || defined(_M_IX86) || defined(_X86_)
+	// x86
+	#define @CONCRETE_MACRO_PREFIX@_CPU_X86
+
+	#define @CONCRETE_MACRO_PREFIX@_COMPILER_TARGET x86
+#else
+	#error "unknown cpu type, unsupported target"
+#endif
+
+// Defines the native endian
+#if defined(@CONCRETE_MACRO_PREFIX@_CPU_ARM) || defined(@CONCRETE_MACRO_PREFIX@_CPU_ARM64)
+	#if defined(__BIG_ENDIAN__) || defined(__ARMEB__) || defined(__THUMBEB__) || defined(__AARCH64EB__)
+		#define @CONCRETE_MACRO_PREFIX@_BIG_ENDIAN
+	#else
+		#define @CONCRETE_MACRO_PREFIX@_LITTLE_ENDIAN
+	#endif
+#elif defined(@CONCRETE_MACRO_PREFIX@_CPU_X86) || defined(@CONCRETE_MACRO_PREFIX@_CPU_X64) || defined(@CONCRETE_MACRO_PREFIX@_PLATFORM_WINDOWS)
+	#define @CONCRETE_MACRO_PREFIX@_LITTLE_ENDIAN
+#else
+	#error "unknown cpu endian."
+#endif
 
 // API Exprot
 #ifdef @CONCRETE_MACRO_PREFIX@_HAS_DECLSPEC
@@ -83,7 +167,7 @@
 #else
 	#ifdef @CONCRETE_MACRO_PREFIX@_COMPILER_GCC
 		#define @CONCRETE_MACRO_PREFIX@_API_EXPORT  __attribute__ ((visibility("default")))
-		#define @CONCRETE_MACRO_PREFIX@_API_IMPORT  __attribute__ ((visibility("default")))
+		#define @CONCRETE_MACRO_PREFIX@_API_IMPORT  
 	#endif
 #endif
 
@@ -109,8 +193,23 @@
 #define @CONCRETE_MACRO_PREFIX@_UNUSED8(a1,a2,a3,a4,a5,a6,a7,a8)    @CONCRETE_MACRO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MACRO_PREFIX@_UNUSED4(a5,a6,a7,a8)
 #define @CONCRETE_MACRO_PREFIX@_UNUSED9(a1,a2,a3,a4,a5,a6,a7,a8,a9) @CONCRETE_MACRO_PREFIX@_UNUSED4(a1,a2,a3,a4); @CONCRETE_MACRO_PREFIX@_UNUSED5(a5,a6,a7,a8,a9)
 
-#if !defined(__cplusplus)
-#else
+#ifdef CONCRETE_USE_C99_BOOL_TYPE
+	#if !defined(__cplusplus)
+		#ifdef @CONCRETE_MACRO_PREFIX@_C99_BOOL_TYPE_SUPPORT
+			#include <stdbool.h>
+		#else
+			#if !defined(__bool_true_false_are_defined)
+				#define __bool_true_false_are_defined 1
+				
+				#define bool  int
+				#define true  1
+				#define false 0
+			#endif
+		#endif
+	#endif
+#endif
+
+#if defined(__cplusplus)
 	// Use Boost
 	#ifdef CONCRETE_USE_BOOST
 		// Forces all boost's libraries to be linked as dll
