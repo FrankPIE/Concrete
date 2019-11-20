@@ -1,8 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
 
-include(CMakeParseArguments)
-# TODO https://www.cnblogs.com/navysummer/p/10251537.html
-include(CheckCXXCompilerFlag)
+INCLUDE(CMakeParseArguments)
 
 # project name forward declaration
 SET(CONCRETE_PROJECT_NAME ${PROJECT_NAME} CACHE INTERNAL "Project name")
@@ -36,6 +34,8 @@ ENDMACRO(_CONCRETE_GET_PLATFORM_INFO)
 # ARGV1. concrete relative path
 MACRO(CONCRETE_INIT PROJECT_ROOT_PATH CONCRETE_RELATIVE_PATH)
     _CONCRETE_GET_PLATFORM_INFO()
+
+    _CONCRETE_CHECK_INCLUDE_FILES()
 
     SET(CONCRETE_PROJECT_SOURCE_DIR ${ARGV0} CACHE PATH "Project root directory" FORCE)
 

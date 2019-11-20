@@ -114,10 +114,6 @@
 	#elif _MSC_VER >= 1400 
 		#define @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION 80
 	#endif 
-
-	#if @CONCRETE_MACRO_PREFIX@_COMPILER_VERSION >= 120
-		#define @CONCRETE_MACRO_PREFIX@_C99_BOOL_TYPE_SUPPORT
-	#endif
 #else
 	#error unknown compiler
 #endif
@@ -196,7 +192,7 @@
 
 #ifdef CONCRETE_USE_C99_BOOL_TYPE
 	#if !defined(__cplusplus)
-		#ifdef @CONCRETE_MACRO_PREFIX@_C99_BOOL_TYPE_SUPPORT
+		#ifdef CONCRETE_C99_BOOL_TYPE_SUPPORT
 			#include <stdbool.h>
 		#else
 			#if !defined(__bool_true_false_are_defined)

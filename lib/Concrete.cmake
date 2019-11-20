@@ -9,5 +9,6 @@ INCLUDE(ProjectOperator)
 
 # Config file
 INCLUDE(ConfigFileOptions)
+INCLUDE(CompilerCheck)
 
 INCLUDE(CCXXConfigFile)
