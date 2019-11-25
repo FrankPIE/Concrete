@@ -1,14 +1,12 @@
-# REQUIRE LEAST CMAKE 3.0.2
-cmake_minimum_required(VERSION 3.0.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10.3)
 
-project(ConcreteUnitTest C CXX)
+PROJECT(Concrete C CXX VERSION 1 0 0)
 
-set (CONCRETE_SORUCE_DIR ${CMAKE_SOURCE_DIR}/../..)
+LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_HOME_DIRECTORY}/../modules)
 
-include(${CONCRETE_SORUCE_DIR}/Concrete/lib/Configure.cmake)
-include(${CONCRETE_SORUCE_DIR}/Concrete/lib/FileOperator.cmake)
+INCLUDE(Concrete)
 
-# unit test framework
-include(${CONCRETE_SORUCE_DIR}/Concrete/lib/UnitTest.cmake)
-
-# init
+CONCRETE_METHOD_INITIALIZATION(
+    ADD_COMPILER_TARGET_DIR
+    PROJECT_ROOT_DIR ${CMAKE_HOME_DIRECTORY}/../
+)
