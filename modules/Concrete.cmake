@@ -26,13 +26,6 @@ INCLUDE_GUARD(GLOBAL)
 # CMake standard module
 INCLUDE( CMakeParseArguments )
 
-# INCLUDE( CheckCCompilerFlag )
-# INCLUDE( CheckCXXCompilerFlag )
-
-# INCLUDE( CheckIncludeFile )
-# INCLUDE( CheckIncludeFileCXX )
-# INCLUDE( CheckIncludeFiles )
-
 # Concrete modules
 INCLUDE( ConcreteVariables )
 INCLUDE( ConcreteProperties )
@@ -41,12 +34,12 @@ INCLUDE( ConcreteDebug )
 # Concrete Envionment modules
 INCLUDE( Environment/DetectSystemInfo )
 
-FUNCTION(CONCRETE_METHOD_INITIALIZATION)
-    SET(options ADD_COMPILER_TARGET_DIR)
+MACRO(CONCRETE_METHOD_INITIALIZATION)     
+    SET(options PROJECT_GEN_COMPILER_TARGET_DIR PROJECT_LANGUAGE_C PROJECT_LANGUAGE_CXX PROJECT_LANGUAGE_CUDA PROJECT_LANGUAGE_OBJC PROJECT_LANGUAGE_OBJCXX PROJECT_LANGUAGE_FORTRAN PROJECT_LANGUAGE_ASM)
 
-    SET(singleValueKey PROJECT_ROOT_DIR BINARY_OUTPUT_DIR LIBRARY_OUTPUT_DIR)
+    SET(singleValueKey PROJECT_NAME PROJECT_DESCRIPTION PROJECT_HOMEPAGE_URL PROJECT_ROOT_DIR PROJECT_ PROJECT_BINARY_OUTPUT_DIR PROJECT_LIBRARY_OUTPUT_DIR)
     
-    SET(mulitValueKey)
+    SET(mulitValueKey PROJECT_VERSION)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -55,6 +48,185 @@ FUNCTION(CONCRETE_METHOD_INITIALIZATION)
         "${mulitValueKey}"
         ${ARGN}
     )
+
+    UNSET(options)
+    UNSET(singleValueKey)
+    UNSET(mulitValueKey)
+
+    # begin set project
+    IF(_CONCRETE_PROJECT_NAME)
+        SET(CONCRETE_PROJECT_NAME ${_CONCRETE_PROJECT_NAME} CACHE INTERNAL "project name" FORCE)
+    ELSE()
+        MESSAGE(FATAL_ERROR "Project name must be set")
+    ENDIF(_CONCRETE_PROJECT_NAME)
+
+    SET(languages)
+
+    # C
+    IF(${_CONCRETE_PROJECT_LANGUAGE_C})
+        SET(languages ${languages} C)
+    ENDIF(${_CONCRETE_PROJECT_LANGUAGE_C})
+
+    # CXX
+    IF(${_CONCRETE_PROJECT_LANGUAGE_CXX})
+        SET(languages ${languages} CXX)
+    ENDIF(${_CONCRETE_PROJECT_LANGUAGE_CXX})
+
+    # CUDA
+    IF(${_CONCRETE_PROJECT_LANGUAGE_CUDA})
+        SET(languages ${languages} CUDA)
+    ENDIF(${_CONCRETE_PROJECT_LANGUAGE_CUDA})
+
+    # OBJC
+    IF(${_CONCRETE_PROJECT_LANGUAGE_OBJC})
+        SET(languages ${languages} OBJC)
+    ENDIF(${_CONCRETE_PROJECT_LANGUAGE_OBJC})
+
+    # OBJCXX
+    IF(${_CONCRETE_PROJECT_LANGUAGE_OBJCXX})
+        SET(languages ${languages} OBJCXX)
+    ENDIF(${_CONCRETE_PROJECT_LANGUAGE_OBJC})
+
+    # Fortran
+    IF(${_CONCRETE_PROJECT_LANGUAGE_FORTRAN})
+        SET(languages ${languages} Fortran)
+    ENDIF(${_CONCRETE_PROJECT_LANGUAGE_FORTRAN})
+
+    # ASM
+    IF(${_CONCRETE_PROJECT_LANGUAGE_ASM})
+        SET(languages ${languages} ASM)
+    ENDIF(${_CONCRETE_PROJECT_LANGUAGE_ASM})
+
+    SET(languagesListLenght)
+    LIST(LENGTH languages languagesListLenght)
+
+    ####################################################################
+    IF(_CONCRETE_PROJECT_VERSION)
+        SET(versionListLength)
+
+        LIST(LENGTH _CONCRETE_PROJECT_VERSION versionListLength)
+
+        IF (${versionListLength} GREATER 0)
+            SET(major)
+            LIST(GET _CONCRETE_PROJECT_VERSION 0 major)
+            SET(CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR ${major} CACHE INTERNAL "software version major" FORCE)
+            UNSET(major)
+            SET(CONCRETE_PROJECT_SOFTWARE_VERSION "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}" CACHE INTERNAL "software version" FORCE)
+        ENDIF(${versionListLength} GREATER 0)
+
+        IF (${versionListLength} GREATER 1)
+            SET(minor)
+            LIST(GET _CONCRETE_PROJECT_VERSION 1 minor)
+            SET(CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR ${minor} CACHE INTERNAL "software version minor" FORCE)
+            UNSET(minor)
+            SET(CONCRETE_PROJECT_SOFTWARE_VERSION "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}" CACHE INTERNAL "software version" FORCE)
+        ENDIF(${versionListLength} GREATER 1)
+
+        IF (${versionListLength} GREATER 2)
+            SET(patch)
+            LIST(GET _CONCRETE_PROJECT_VERSION 2 patch)
+            SET(CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH ${patch} CACHE INTERNAL "software version patch" FORCE)
+            UNSET(patch)
+            SET(CONCRETE_PROJECT_SOFTWARE_VERSION "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}" CACHE INTERNAL "software version" FORCE)
+        ENDIF(${versionListLength} GREATER 2)
+
+        IF (${versionListLength} GREATER 3)
+            SET(tweak)
+            LIST(GET _CONCRETE_PROJECT_VERSION 3 tweak)
+            SET(CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK ${tweak} CACHE INTERNAL "software version tweak" FORCE)
+            UNSET(tweak)
+            SET(CONCRETE_PROJECT_SOFTWARE_VERSION "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}.${CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK}" CACHE INTERNAL "software version" FORCE)
+        ENDIF(${versionListLength} GREATER 3)
+
+        UNSET(versionListLength)
+    ENDIF(_CONCRETE_PROJECT_VERSION)
+
+    IF (_CONCRETE_PROJECT_DESCRIPTION)
+        SET(CONCRETE_PROJECT_DESCRIPTION ${_CONCRETE_PROJECT_DESCRIPTION} CACHE INTERNAL "project description" FORCE)
+    ENDIF(_CONCRETE_PROJECT_DESCRIPTION)
+
+    IF (_CONCRETE_PROJECT_HOMEPAGE_URL)
+        SET(CONCRETE_PROJECT_HOMEPAGE_URL ${_CONCRETE_PROJECT_HOMEPAGE_URL} CACHE INTERNAL "project homepage url" FORCE)
+    ENDIF(_CONCRETE_PROJECT_HOMEPAGE_URL)
+
+    SET(cmakeVersion "$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}")
+
+    IF ( ${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
+        IF (${languagesListLenght} GREATER 0)
+            IF (_CONCRETE_PROJECT_VERSION)
+
+                PROJECT(${CONCRETE_PROJECT_NAME} 
+                        LANGUAGES ${languages} 
+                        VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
+                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION} 
+                        HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
+                        )
+            ELSE()
+
+                PROJECT(${CONCRETE_PROJECT_NAME}
+                        LANGUAGES ${languages} 
+                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+                        HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
+                        )
+            ENDIF(_CONCRETE_PROJECT_VERSION)
+        ELSE()
+            IF (_CONCRETE_PROJECT_VERSION)
+
+                PROJECT(${CONCRETE_PROJECT_NAME}
+                        VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
+                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+                        HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
+                        )
+            ELSE()
+
+                PROJECT(${CONCRETE_PROJECT_NAME} 
+                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+                        HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
+                        )
+
+            ENDIF(_CONCRETE_PROJECT_VERSION)
+        ENDIF(${languagesListLenght} GREATER 0)
+    ELSE()
+        IF (${languagesListLenght} GREATER 0)
+            IF (_CONCRETE_PROJECT_VERSION)
+
+                PROJECT(${CONCRETE_PROJECT_NAME}
+                        LANGUAGES ${languages} 
+                        VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
+                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+                        )
+
+            ELSE()
+
+                PROJECT(${CONCRETE_PROJECT_NAME} 
+                        LANGUAGES ${languages} 
+                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+                        )
+
+            ENDIF(_CONCRETE_PROJECT_VERSION)
+        ELSE()
+            IF (_CONCRETE_PROJECT_VERSION)
+
+                PROJECT(${CONCRETE_PROJECT_NAME} 
+                        VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
+                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+                        )
+                        
+            ELSE()
+
+                PROJECT(${CONCRETE_PROJECT_NAME} 
+                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+                        )
+
+            ENDIF(_CONCRETE_PROJECT_VERSION)
+        ENDIF(${languagesListLenght} GREATER 0)
+    ENDIF($<VERSION_GREATER_EQUAL:"$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}""3.12.4">)
+
+    UNSET(cmakeVersion)
+    UNSET(languagesListLenght)
+    UNSET(languages)
+
+    # end set project 
 
     CONCRETE_METHOD_COLLECT_SYSTEM_INFORMATION()
 
@@ -78,39 +250,39 @@ FUNCTION(CONCRETE_METHOD_INITIALIZATION)
     #[[ begin set output dir ]] ########################################
     SET(runtimeOutputDir)
 
-    IF(_CONCRETE_BINARY_OUTPUT_DIR)
-        SET(runtimeOutputDir ${_CONCRETE_BINARY_OUTPUT_DIR})
-    ELSE(_CONCRETE_BINARY_OUTPUT_DIR)
+    IF(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
+        SET(runtimeOutputDir ${_CONCRETE_PROJECT_BINARY_OUTPUT_DIR})
+    ELSE(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
         SET(runtimeOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/bin)
-    ENDIF(_CONCRETE_BINARY_OUTPUT_DIR)
+    ENDIF(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
 
-    IF (${_CONCRETE_ADD_COMPILER_TARGET_DIR})
+    IF (${_CONCRETE_PROJECT_GEN_COMPILER_TARGET_DIR})
         SET(runtimeOutputDir ${runtimeOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    ENDIF(${_CONCRETE_ADD_COMPILER_TARGET_DIR})
+    ENDIF(${_CONCRETE_PROJECT_GEN_COMPILER_TARGET_DIR})
 
     SET(CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY ${runtimeOutputDir} CACHE PATH "global binary files generate directory" FORCE)
 
+    UNSET(runtimeOutputDir)
+
     SET(libraryOutputDir)
 
-    IF(_CONCRETE_LIBRARY_OUTPUT_DIR)
-        SET(libraryOutputDir ${_CONCRETE_LIBRARY_OUTPUT_DIR})
-    ELSE(_CONCRETE_LIBRARY_OUTPUT_DIR)
+    IF(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
+        SET(libraryOutputDir ${_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR})
+    ELSE(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
         SET(libraryOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/lib)
-    ENDIF(_CONCRETE_LIBRARY_OUTPUT_DIR)
+    ENDIF(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
 
-    IF (${_CONCRETE_ADD_COMPILER_TARGET_DIR})
+    IF (${_CONCRETE_PROJECT_GEN_COMPILER_TARGET_DIR})
         SET(libraryOutputDir ${libraryOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    ENDIF(${_CONCRETE_ADD_COMPILER_TARGET_DIR})
+    ENDIF(${_CONCRETE_PROJECT_GEN_COMPILER_TARGET_DIR})
 
     SET(CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY ${libraryOutputDir} CACHE PATH "global binary files generate directory" FORCE)
+
+    UNSET(libraryOutputDir)
 
     SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY})        
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY})
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY})
     #[[ end set output dir ]] ########################################
 
-ENDFUNCTION(CONCRETE_METHOD_INITIALIZATION)
-
-FUNCTION(CONCRETE_METHOD_SET_VERSION)
-
-ENDFUNCTION(CONCRETE_METHOD_SET_VERSION)
+ENDMACRO(CONCRETE_METHOD_INITIALIZATION)

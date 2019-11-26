@@ -95,6 +95,12 @@ SET(CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY CACHE PATH "global library files g
 # project name
 SET(CONCRETE_PROJECT_NAME CACHE INTERNAL "project name" FORCE)
 
+# project decription
+SET(CONCRETE_PROJECT_DESCRIPTION CACHE INTERNAL "project description" FORCE)
+
+# project homepage url cmake >= 3.12.4 
+SET(CONCRETE_PROJECT_HOMEPAGE_URL CACHE INTERNAL "project homepage url" FORCE)
+
 # compiler target
 SET(CONCRETE_PROJECT_COMPILER_TARGET CACHE INTERNAL "project compiler target" FORCE)
 
@@ -109,3 +115,6 @@ SET(CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR CACHE INTERNAL "software version min
 
 # project version patch
 SET(CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH CACHE INTERNAL "software version patch" FORCE)
+
+# project version tweak
+SET(CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK CACHE INTERNAL "software version tweak" FORCE)
