@@ -18,22 +18,3 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.3)
-
-INCLUDE_GUARD(GLOBAL)
-
-# Concrete modules
-INCLUDE( ConcreteVariables )
-INCLUDE( ConcreteProperties )
-INCLUDE( ConcreteDebug )
-
-# Concrete Unitity modules
-INCLUDE( Unitity/ConcreteDebug )
-INCLUDE( Unitity/ConcreteFileHelper )
-
-# Concrete Envionment modules
-INCLUDE( Environment/ConcreteDetectSystemInfo )
-
-# Concrete Project modules
-INCLUDE( Project/ConcreteProjectConfigure )
