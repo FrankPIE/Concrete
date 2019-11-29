@@ -18,3 +18,25 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+# include once
+INCLUDE_GUARD(GLOBAL)
+
+INCLUDE( CMakeParseArguments )
+
+# create a new directory
+FUNCTION(CONCRETE_METHOD_CREATE_DIRECTORY DIRECTORY_PATH)
+    set(target ${DIRECTORY_PATH})
+
+    IF (EXISTS ${target})
+        MESSAGE(WARNING "${target} has created!")
+    ELSE()
+        FILE(MAKE_DIRECTORY ${target})
+
+        IF (NOT EXISTS ${target})
+            MESSAGE(WARNING "Create ${target} failed!")
+        ELSE()
+            MESSAGE(STATUS "Create ${target} OK!")
+        ENDIF()
+    ENDIF()
+ENDFUNCTION(CONCRETE_METHOD_CREATE_DIRECTORY)
