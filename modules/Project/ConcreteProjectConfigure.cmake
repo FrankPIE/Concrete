@@ -28,7 +28,7 @@ MACRO(CONCRETE_METHOD_PROJECT_INITIALIZATION)
 
     SET(singleValueKey PROJECT_NAME PROJECT_DESCRIPTION PROJECT_HOMEPAGE_URL PROJECT_ROOT_DIR PROJECT_BINARY_OUTPUT_DIR PROJECT_LIBRARY_OUTPUT_DIR)
     
-    SET(mulitValueKey PROJECT_VERSION)
+    SET(mulitValueKey PROJECT_VERSION PROJECT_BUILD_TYPES)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -212,8 +212,6 @@ MACRO(CONCRETE_METHOD_PROJECT_INITIALIZATION)
     ENDIF(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
 
     UNSET(cmakeVersion)
-    UNSET(languagesListLenght)
-    UNSET(languages)
 
     # end set project 
 
@@ -274,6 +272,61 @@ MACRO(CONCRETE_METHOD_PROJECT_INITIALIZATION)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY})
     #[[ end set output dir ]] ########################################
 
+    # begin set build types
+    SET(buildTypes "")
+    IF(_CONCRETE_PROJECT_BUILD_TYPES)
+        FOREACH(var ${_CONCRETE_PROJECT_BUILD_TYPES})
+            STRING(APPEND buildTypes "${var};")
+
+            SET(upperValue)
+            STRING(TOUPPER "${var}" upperValue)
+
+            IF(NOT CMAKE_EXE_LINKER_FLAGS_${upperValue})
+                SET(CMAKE_EXE_LINKER_FLAGS_${upperValue} CACHE STRING "Flags used by the linker during ${upperValue} builds." FORCE)
+            ENDIF(NOT CMAKE_EXE_LINKER_FLAGS_${upperValue})
+
+            IF (${languagesListLenght} EQUAL 0)
+                SET(languages C CXX)
+            ENDIF(${languagesListLenght} EQUAL 0)
+
+            FOREACH(lang ${languages})
+                SET(langUpperValue)                
+                STRING(TOUPPER "${lang}" langUpperValue)
+
+                IF(NOT CMAKE_${langUpperValue}_FLAGS_${upperValue})
+                    SET(CMAKE_${langUpperValue}_FLAGS_${upperValue} CACHE STRING "Flags used by the ${langUpperValue} compiler during ${upperValue} builds." FORCE)
+                ENDIF(NOT CMAKE_${langUpperValue}_FLAGS_${upperValue})
+
+                UNSET(langUpperValue)
+            ENDFOREACH(lang ${languages})
+            
+            UNSET(upperValue)
+        ENDFOREACH(var ${_CONCRETE_PROJECT_BUILD_TYPES})
+
+        SET(length)
+        STRING(LENGTH "${buildTypes}" length)
+        MATH(EXPR length "${length} - 1")
+        STRING(SUBSTRING "${buildTypes}" 0 ${length} buildTypes)
+        UNSET(length)        
+
+        IF(CMAKE_CONFIGURATION_TYPES) # multiconfig generator?
+            SET(CMAKE_CONFIGURATION_TYPES "${buildTypes}" CACHE STRING "Choose the type of build" FORCE) 
+        ELSE()
+            IF(NOT CMAKE_BUILD_TYPE)
+                SET(CMAKE_BUILD_TYPE "${buildTypes}" CACHE STRING "" FORCE)
+            ENDIF()
+
+            SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
+
+            SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${buildTypes}")
+        ENDIF()
+    ENDIF(_CONCRETE_PROJECT_BUILD_TYPES)
+
+    UNSET(buildTypes)
+    UNSET(languagesListLenght)
+    UNSET(languages)
+
+    # end set build types
 ENDMACRO(CONCRETE_METHOD_PROJECT_INITIALIZATION)
 
 FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
@@ -357,6 +410,92 @@ FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
         NEWLINE_STYLE ${newlineStyle}
     )
 ENDFUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
+
+FUNCTION(CONCRETE_METHOD_PROJECT_BUILD_CONFIG_SETTING)
+    SET(options APPEND)
+    SET(singleValueKey BUILD_TYPE LANGUAGE_OR_LINKER COPY_FROM_TYPE)
+    SET(mulitValueKey)
+    
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueKey}"
+        "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    IF(NOT _CONCRETE_BUILD_TYPE)
+        MESSAGE(FATAL_ERROR "Build type must be set")
+    ENDIF(NOT _CONCRETE_BUILD_TYPE)
+
+    IF (NOT _CONCRETE_LANGUAGE_OR_LINKER)
+        MESSAGE(FATAL_ERROR "language or linker must be set")
+    ENDIF(NOT _CONCRETE_LANGUAGE_OR_LINKER)
+
+    SET(flagName)
+    IF(${_CONCRETE_BUILD_TYPE} STREQUAL "")
+        IF (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+            SET(flagName CMAKE_EXE_LINKER_FLAGS)
+        ELSE()
+            SET(language)
+            STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
+            SET(flagName CMAKE_${language}_FLAGS)
+        ENDIF(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+    ELSE()
+        SET(buildType)
+        STRING(TOUPPER "${_CONCRETE_BUILD_TYPE}" buildType)
+
+        IF (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+            SET(flagName CMAKE_EXE_LINKER_FLAGS_${buildType})
+        ELSE()
+            SET(language)
+            STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
+            SET(flagName CMAKE_${language}_FLAGS_${buildType})
+        ENDIF(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+    ENDIF(${_CONCRETE_BUILD_TYPE} STREQUAL "")
+
+    IF(NOT DEFINED ${flagName})
+        MESSAGE(FATAL_ERROR "cache variable flag can not find")
+    ENDIF(NOT DEFINED ${flagName})
+
+    SET(flagCopyFrom)
+    IF(_CONCRETE_COPY_FROM_TYPE)
+        IF(${_CONCRETE_COPY_FROM_TYPE} STREQUAL "")
+            IF (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+                SET(flagCopyFrom CMAKE_EXE_LINKER_FLAGS)
+            ELSE()
+                SET(language)
+                STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
+                SET(flagCopyFrom CMAKE_${language}_FLAGS)
+            ENDIF(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+        ELSE()
+            SET(buildType)
+            STRING(TOUPPER "${_CONCRETE_COPY_FROM_TYPE}" buildType)
+
+            IF (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+                SET(flagCopyFrom CMAKE_EXE_LINKER_FLAGS_${buildType})
+            ELSE()
+                SET(language)
+                STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
+                SET(flagCopyFrom CMAKE_${language}_FLAGS_${buildType})
+            ENDIF(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+        ENDIF(${_CONCRETE_BUILD_TYPE} STREQUAL "")
+
+        IF(NOT DEFINED ${flagCopyFrom})
+            MESSAGE(FATAL_ERROR "Copy source not exists")
+        ELSE()
+            SET_PROPERTY(CACHE ${flagName} PROPERTY VALUE "${${flagCopyFrom}}")
+
+            RETURN()
+        ENDIF(NOT DEFINED ${flagCopyFrom})
+    ENDIF(_CONCRETE_COPY_FROM_TYPE)
+
+    SET(flags)
+    IF(${_CONCRETE_APPEND})
+        SET(flags "${${flagName}}")
+    ENDIF(${_CONCRETE_APPEND})
+
+ENDFUNCTION(CONCRETE_METHOD_PROJECT_BUILD_CONFIG_SETTING)
 
 FUNCTION(CONCRETE_METHOD_PROJECT_GLOBAL_SETTING)
     SET(options USE_FOLDERS)
