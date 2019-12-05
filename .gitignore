@@ -9,4 +9,4 @@ compile_commands.json
 CTestTestfile.cmake
 
 /lib
-test/build
+*/build
