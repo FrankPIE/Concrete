@@ -82,6 +82,8 @@ SET(CONCRETE_ENVIONMENT_SYSTEM_INFO_OS_PLATFORM CACHE INTERNAL "See CMAKE_HOST_S
 ############################# [[ Project Variables ]] ##############################
 
 # [[ PATH ]]
+SET(CONCRETE_PROJECT_DEFAULT_PARAMETER "_;LANGUAGES;NONE" CACHE INTERNAL "project default parameter" FORCE)
+
 # prject root dir default as ${CMAKE_SOURCE_DIR}
 SET(CONCRETE_PROJECT_ROOT_DIRECTORY CACHE PATH "prject root dir default as ${CMAKE_HOME_DIRECTORY}" FORCE)
 

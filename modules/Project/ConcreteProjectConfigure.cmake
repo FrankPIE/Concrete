@@ -44,7 +44,6 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
     # begin set project
     IF(_CONCRETE_PROJECT_NAME)
         SET_PROPERTY(CACHE CONCRETE_PROJECT_NAME PROPERTY VALUE ${_CONCRETE_PROJECT_NAME})
-        # SET(CONCRETE_PROJECT_NAME ${_CONCRETE_PROJECT_NAME} CACHE INTERNAL "project name" FORCE)
     ELSE()
         MESSAGE(FATAL_ERROR "Project name must be set")
     ENDIF(_CONCRETE_PROJECT_NAME)
@@ -279,20 +278,15 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
     # begin set build types
     SET(buildTypes "")
     IF(_CONCRETE_PROJECT_BUILD_TYPES)
-        FOREACH(var ${_CONCRETE_PROJECT_BUILD_TYPES})
-            STRING(APPEND buildTypes "${var};")
+        GET_PROPERTY(languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 
-            SET(upperValue)
+        FOREACH(var ${_CONCRETE_PROJECT_BUILD_TYPES})
             STRING(TOUPPER "${var}" upperValue)
 
             IF(NOT CMAKE_EXE_LINKER_FLAGS_${upperValue})
                 SET(CMAKE_EXE_LINKER_FLAGS_${upperValue} CACHE STRING "Flags used by the linker during ${upperValue} builds." FORCE)
             ENDIF(NOT CMAKE_EXE_LINKER_FLAGS_${upperValue})
-
-            IF (${languagesListLenght} EQUAL 0)
-                SET(languages C CXX)
-            ENDIF(${languagesListLenght} EQUAL 0)
-
+            
             FOREACH(lang ${languages})
                 SET(langUpperValue)                
                 STRING(TOUPPER "${lang}" langUpperValue)
@@ -305,13 +299,9 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
             
         ENDFOREACH(var ${_CONCRETE_PROJECT_BUILD_TYPES})
 
-        # pop last ;
-        CONCRETE_METHOD_STRING_POP_LAST(buildTypes 1 buildTypes)
-
         IF(CMAKE_CONFIGURATION_TYPES)
-            SET_PROPERTY(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY VALUE "${buildTypes}")
+            SET_PROPERTY(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY VALUE "${_CONCRETE_PROJECT_BUILD_TYPES}")
             SET_PROPERTY(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY HELPSTRING "configuration types")            
-            # SET(CMAKE_CONFIGURATION_TYPES "${buildTypes}" CACHE STRING "Choose the type of build" FORCE) 
         ELSE()
             IF(NOT CMAKE_BUILD_TYPE)
                 SET(CMAKE_BUILD_TYPE "${buildTypes}" CACHE STRING "" FORCE)
