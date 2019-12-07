@@ -21,3 +21,12 @@
 
 # include once
 INCLUDE_GUARD(GLOBAL)
+
+# Chain up FOLDER property to DIRECTORY Scope
+DEFINE_PROPERTY(
+    TARGET
+    PROPERTY FOLDER
+    INHERITED
+    BRIEF_DOCS "Set the folder name."
+    FULL_DOCS  "Use to organize targets in an IDE. Chain up to DIRECTORY."
+)

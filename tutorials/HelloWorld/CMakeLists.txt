@@ -21,20 +21,4 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10.3)
 
-INCLUDE_GUARD(GLOBAL)
-
-# Concrete modules
-INCLUDE( ConcreteVariables )
-INCLUDE( ConcreteProperties )
-
-# Concrete Unitity modules
-INCLUDE( Unitity/ConcreteDebug )
-INCLUDE( Unitity/ConcreteFileHelper )
-INCLUDE( Unitity/ConcreteStringHelper )
-
-# Concrete Envionment modules
-INCLUDE( Environment/ConcreteDetectSystemInfo )
-
-# Concrete Project modules
-INCLUDE( Project/ConcreteProjectConfigure )
-INCLUDE( Project/ConcreteDirectorys )
+ADD_EXECUTABLE(HelloWorld ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
