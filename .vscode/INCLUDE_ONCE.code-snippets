@@ -1,0 +1,17 @@
+{
+	"include-once-g": {
+		"prefix": "ionce-g",
+		"body": [
+			"INCLUDE_GUARD(GLOBAL)"
+		],
+		"description": "include once global"
+	},
+
+	"include-once-d": {
+		"prefix": "ionce-d",
+		"body": [
+			"INCLUDE_GUARD(DIRECTORY)"
+		],
+		"description": "include once directory"
+	}
+}
