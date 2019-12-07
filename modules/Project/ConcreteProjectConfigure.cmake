@@ -24,6 +24,35 @@ INCLUDE_GUARD(GLOBAL)
 INCLUDE( CMakeParseArguments )
 
 INCLUDE( Project/Internal/ConcreteBuildTypeOptions )
+INCLUDE( Project/Internal/ConcreteCheckLanguage )
+
+FUNCTION(CONCRETE_INTERNAL_METHOD_CLEAR_CACHE)
+        # workaround for fix cache value
+        LIST(GET CONCRETE_PROJECT_DEFAULT_PARAMETER 0 tempName)
+        UNSET(${tempName}_BINARY_DIR CACHE)
+        UNSET(${tempName}_SOURCE_DIR CACHE)
+        
+        IF (CMAKE_CONFIGURATION_TYPES)
+            SET(buildTypes ${CMAKE_CONFIGURATION_TYPES})
+        ELSE()
+            SET(buildTypes ${CMAKE_BUILD_TYPE})
+        ENDIF(CMAKE_CONFIGURATION_TYPES)
+
+        FOREACH(var ${buildTypes})
+            STRING(TOUPPER "${var}" upperValue)
+
+            UNSET(CMAKE_NONE_FLAGS_${upperValue} CACHE)            
+        ENDFOREACH(var ${buildTypes})
+
+        STRING(REPLACE "${tempName}" ${CONCRETE_PROJECT_NAME} value "${CMAKE_INSTALL_PREFIX}")
+        SET_PROPERTY(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE ${value})    
+ENDFUNCTION(CONCRETE_INTERNAL_METHOD_CLEAR_CACHE)
+
+MACRO(CONCRETE_INTERNAL_METHOD_EXPORT_SCOPE_VARIABLES)
+    IF (MSVC)
+        SET(MSVC ${MSVC} PARENT_SCOPE)
+    ENDIF(MSVC)
+ENDMACRO(CONCRETE_INTERNAL_METHOD_EXPORT_SCOPE_VARIABLES)
 
 FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)     
     SET(options PROJECT_GEN_COMPILER_TARGET_SUBDIRECTORY 
@@ -48,45 +77,58 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
         MESSAGE(FATAL_ERROR "Project name must be set")
     ENDIF(_CONCRETE_PROJECT_NAME)
 
-    SET(languages)
+    # SET(languages)
+
+    # SET(languagesListLenght)
+    # LIST(LENGTH languages languagesListLenght)
 
     # C
+    LIST(APPEND projectParameterList LANGUAGES)
     IF(${_CONCRETE_PROJECT_LANGUAGE_C})
-        SET(languages ${languages} C)
+        LIST(APPEND projectParameterList C)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_C})
 
     # CXX
     IF(${_CONCRETE_PROJECT_LANGUAGE_CXX})
-        SET(languages ${languages} CXX)
+        LIST(APPEND projectParameterList CXX)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_CXX})
 
     # CUDA
     IF(${_CONCRETE_PROJECT_LANGUAGE_CUDA})
-        SET(languages ${languages} CUDA)
+        LIST(APPEND projectParameterList CUDA)
+        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(CUDA)
+        # SET(languages ${languages} CUDA)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_CUDA})
 
     # OBJC
     IF(${_CONCRETE_PROJECT_LANGUAGE_OBJC})
-        SET(languages ${languages} OBJC)
+        LIST(APPEND projectParameterList OBJC)
+        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(OBJC)
+        # SET(languages ${languages} OBJC)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_OBJC})
 
     # OBJCXX
     IF(${_CONCRETE_PROJECT_LANGUAGE_OBJCXX})
-        SET(languages ${languages} OBJCXX)
+        LIST(APPEND projectParameterList OBJCXX)
+
+        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(OBJCXX)
+        # SET(languages ${languages} OBJCXX)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_OBJCXX})
 
     # Fortran
     IF(${_CONCRETE_PROJECT_LANGUAGE_FORTRAN})
-        SET(languages ${languages} Fortran)
+        LIST(APPEND projectParameterList Fortran)
+
+        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(Fortran)
+        # SET(languages ${languages} Fortran)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_FORTRAN})
 
     # ASM
     IF(${_CONCRETE_PROJECT_LANGUAGE_ASM})
-        SET(languages ${languages} ASM)
+        LIST(APPEND projectParameterList ASM)
+        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(ASM)
+        # SET(languages ${languages} ASM)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_ASM})
-
-    SET(languagesListLenght)
-    LIST(LENGTH languages languagesListLenght)
 
     ####################################################################
     IF(_CONCRETE_PROJECT_VERSION)
@@ -131,90 +173,101 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
             # SET(CONCRETE_PROJECT_SOFTWARE_VERSION "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}.${CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK}" CACHE INTERNAL "software version" FORCE)
         ENDIF(${versionListLength} GREATER 3)
 
+        IF(NOT ${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
+            LIST(APPEND projectParameterList VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION})
+        ENDIF(NOT ${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
     ENDIF(_CONCRETE_PROJECT_VERSION)
 
     IF (_CONCRETE_PROJECT_DESCRIPTION)
         SET_PROPERTY(CACHE CONCRETE_PROJECT_DESCRIPTION PROPERTY VALUE ${_CONCRETE_PROJECT_DESCRIPTION})
         # SET(CONCRETE_PROJECT_DESCRIPTION ${_CONCRETE_PROJECT_DESCRIPTION} CACHE INTERNAL "project description" FORCE)
+        LIST(APPEND projectParameterList DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION})
     ENDIF(_CONCRETE_PROJECT_DESCRIPTION)
 
     IF (_CONCRETE_PROJECT_HOMEPAGE_URL)
         SET_PROPERTY(CACHE CONCRETE_PROJECT_HOMEPAGE_URL PROPERTY VALUE ${_CONCRETE_PROJECT_HOMEPAGE_URL})
         # SET(CONCRETE_PROJECT_HOMEPAGE_URL ${_CONCRETE_PROJECT_HOMEPAGE_URL} CACHE INTERNAL "project homepage url" FORCE)
+
+        SET(cmakeVersion "$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}")
+
+        IF (${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
+            LIST(APPEND projectParameterList HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL})
+        ENDIF(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")        
     ENDIF(_CONCRETE_PROJECT_HOMEPAGE_URL)
 
-    SET(cmakeVersion "$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}")
+    # project command for languages, version, description, homeurl
+    PROJECT(${CONCRETE_PROJECT_NAME} ${projectParameterList})
 
-    IF ( ${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
-        IF (${languagesListLenght} GREATER 0)
-            IF (_CONCRETE_PROJECT_VERSION)
+    # IF ( ${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
+    #     IF (${languagesListLenght} GREATER 0)
+    #         IF (_CONCRETE_PROJECT_VERSION)
 
-                PROJECT(${CONCRETE_PROJECT_NAME} 
-                        LANGUAGES ${languages} 
-                        VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
-                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION} 
-                        HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
-                        )
-            ELSE()
+    #             PROJECT(${CONCRETE_PROJECT_NAME} 
+    #                     LANGUAGES ${languages} 
+    #                     VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
+    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION} 
+    #                     HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
+    #                     )
+    #         ELSE()
 
-                PROJECT(${CONCRETE_PROJECT_NAME}
-                        LANGUAGES ${languages} 
-                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-                        HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
-                        )
-            ENDIF(_CONCRETE_PROJECT_VERSION)
-        ELSE()
-            IF (_CONCRETE_PROJECT_VERSION)
+    #             PROJECT(${CONCRETE_PROJECT_NAME}
+    #                     LANGUAGES ${languages} 
+    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+    #                     HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
+    #                     )
+    #         ENDIF(_CONCRETE_PROJECT_VERSION)
+    #     ELSE()
+    #         IF (_CONCRETE_PROJECT_VERSION)
 
-                PROJECT(${CONCRETE_PROJECT_NAME}
-                        VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
-                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-                        HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
-                        )
-            ELSE()
+    #             PROJECT(${CONCRETE_PROJECT_NAME}
+    #                     VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
+    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+    #                     HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
+    #                     )
+    #         ELSE()
 
-                PROJECT(${CONCRETE_PROJECT_NAME} 
-                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-                        HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
-                        )
+    #             PROJECT(${CONCRETE_PROJECT_NAME} 
+    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+    #                     HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
+    #                     )
 
-            ENDIF(_CONCRETE_PROJECT_VERSION)
-        ENDIF(${languagesListLenght} GREATER 0)
-    ELSE()
-        IF (${languagesListLenght} GREATER 0)
-            IF (_CONCRETE_PROJECT_VERSION)
+    #         ENDIF(_CONCRETE_PROJECT_VERSION)
+    #     ENDIF(${languagesListLenght} GREATER 0)
+    # ELSE()
+    #     IF (${languagesListLenght} GREATER 0)
+    #         IF (_CONCRETE_PROJECT_VERSION)
 
-                PROJECT(${CONCRETE_PROJECT_NAME}
-                        LANGUAGES ${languages} 
-                        VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
-                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-                        )
+    #             PROJECT(${CONCRETE_PROJECT_NAME}
+    #                     LANGUAGES ${languages} 
+    #                     VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
+    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+    #                     )
 
-            ELSE()
+    #         ELSE()
 
-                PROJECT(${CONCRETE_PROJECT_NAME} 
-                        LANGUAGES ${languages} 
-                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-                        )
+    #             PROJECT(${CONCRETE_PROJECT_NAME} 
+    #                     LANGUAGES ${languages} 
+    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+    #                     )
 
-            ENDIF(_CONCRETE_PROJECT_VERSION)
-        ELSE()
-            IF (_CONCRETE_PROJECT_VERSION)
+    #         ENDIF(_CONCRETE_PROJECT_VERSION)
+    #     ELSE()
+    #         IF (_CONCRETE_PROJECT_VERSION)
 
-                PROJECT(${CONCRETE_PROJECT_NAME} 
-                        VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
-                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-                        )
+    #             PROJECT(${CONCRETE_PROJECT_NAME} 
+    #                     VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
+    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+    #                     )
                         
-            ELSE()
+    #         ELSE()
 
-                PROJECT(${CONCRETE_PROJECT_NAME} 
-                        DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-                        )
+    #             PROJECT(${CONCRETE_PROJECT_NAME} 
+    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
+    #                     )
 
-            ENDIF(_CONCRETE_PROJECT_VERSION)
-        ENDIF(${languagesListLenght} GREATER 0)
-    ENDIF(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
+    #         ENDIF(_CONCRETE_PROJECT_VERSION)
+    #     ENDIF(${languagesListLenght} GREATER 0)
+    # ENDIF(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
 
     # end set project 
 
@@ -312,8 +365,11 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
             SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${buildTypes}")
         ENDIF()
     ENDIF(_CONCRETE_PROJECT_BUILD_TYPES)
-
     # end set build types
+
+    CONCRETE_INTERNAL_METHOD_CLEAR_CACHE()
+
+    CONCRETE_INTERNAL_METHOD_EXPORT_SCOPE_VARIABLES()
 ENDFUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
 
 FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
