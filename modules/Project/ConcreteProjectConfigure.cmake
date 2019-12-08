@@ -77,11 +77,6 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
         MESSAGE(FATAL_ERROR "Project name must be set")
     ENDIF(_CONCRETE_PROJECT_NAME)
 
-    # SET(languages)
-
-    # SET(languagesListLenght)
-    # LIST(LENGTH languages languagesListLenght)
-
     # C
     LIST(APPEND projectParameterList LANGUAGES)
     IF(${_CONCRETE_PROJECT_LANGUAGE_C})
@@ -96,38 +91,26 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
     # CUDA
     IF(${_CONCRETE_PROJECT_LANGUAGE_CUDA})
         LIST(APPEND projectParameterList CUDA)
-        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(CUDA)
-        # SET(languages ${languages} CUDA)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_CUDA})
 
     # OBJC
     IF(${_CONCRETE_PROJECT_LANGUAGE_OBJC})
         LIST(APPEND projectParameterList OBJC)
-        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(OBJC)
-        # SET(languages ${languages} OBJC)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_OBJC})
 
     # OBJCXX
     IF(${_CONCRETE_PROJECT_LANGUAGE_OBJCXX})
         LIST(APPEND projectParameterList OBJCXX)
-
-        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(OBJCXX)
-        # SET(languages ${languages} OBJCXX)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_OBJCXX})
 
     # Fortran
     IF(${_CONCRETE_PROJECT_LANGUAGE_FORTRAN})
         LIST(APPEND projectParameterList Fortran)
-
-        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(Fortran)
-        # SET(languages ${languages} Fortran)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_FORTRAN})
 
     # ASM
     IF(${_CONCRETE_PROJECT_LANGUAGE_ASM})
         LIST(APPEND projectParameterList ASM)
-        # CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE(ASM)
-        # SET(languages ${languages} ASM)
     ENDIF(${_CONCRETE_PROJECT_LANGUAGE_ASM})
 
     ####################################################################
@@ -187,78 +170,6 @@ FUNCTION(CONCRETE_METHOD_PROJECT_INITIALIZATION)
 
     # project command for languages, version, description, homeurl
     PROJECT(${CONCRETE_PROJECT_NAME} ${projectParameterList})
-
-    # IF ( ${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
-    #     IF (${languagesListLenght} GREATER 0)
-    #         IF (_CONCRETE_PROJECT_VERSION)
-
-    #             PROJECT(${CONCRETE_PROJECT_NAME} 
-    #                     LANGUAGES ${languages} 
-    #                     VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
-    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION} 
-    #                     HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
-    #                     )
-    #         ELSE()
-
-    #             PROJECT(${CONCRETE_PROJECT_NAME}
-    #                     LANGUAGES ${languages} 
-    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-    #                     HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
-    #                     )
-    #         ENDIF(_CONCRETE_PROJECT_VERSION)
-    #     ELSE()
-    #         IF (_CONCRETE_PROJECT_VERSION)
-
-    #             PROJECT(${CONCRETE_PROJECT_NAME}
-    #                     VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
-    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-    #                     HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
-    #                     )
-    #         ELSE()
-
-    #             PROJECT(${CONCRETE_PROJECT_NAME} 
-    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-    #                     HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL}
-    #                     )
-
-    #         ENDIF(_CONCRETE_PROJECT_VERSION)
-    #     ENDIF(${languagesListLenght} GREATER 0)
-    # ELSE()
-    #     IF (${languagesListLenght} GREATER 0)
-    #         IF (_CONCRETE_PROJECT_VERSION)
-
-    #             PROJECT(${CONCRETE_PROJECT_NAME}
-    #                     LANGUAGES ${languages} 
-    #                     VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
-    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-    #                     )
-
-    #         ELSE()
-
-    #             PROJECT(${CONCRETE_PROJECT_NAME} 
-    #                     LANGUAGES ${languages} 
-    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-    #                     )
-
-    #         ENDIF(_CONCRETE_PROJECT_VERSION)
-    #     ELSE()
-    #         IF (_CONCRETE_PROJECT_VERSION)
-
-    #             PROJECT(${CONCRETE_PROJECT_NAME} 
-    #                     VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION} 
-    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-    #                     )
-                        
-    #         ELSE()
-
-    #             PROJECT(${CONCRETE_PROJECT_NAME} 
-    #                     DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION}
-    #                     )
-
-    #         ENDIF(_CONCRETE_PROJECT_VERSION)
-    #     ENDIF(${languagesListLenght} GREATER 0)
-    # ENDIF(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
-
     # end set project 
 
     CONCRETE_METHOD_COLLECT_SYSTEM_INFORMATION()
