@@ -36,5 +36,6 @@ INCLUDE( Unitity/ConcreteStringHelper )
 INCLUDE( Environment/ConcreteDetectSystemInfo )
 
 # Concrete Project modules
-INCLUDE( Project/ConcreteProjectConfigure )
-INCLUDE( Project/ConcreteDirectorys )
+INCLUDE( Project/ConcreteTarget )
+INCLUDE( Project/ConcreteDirectory )
+INCLUDE( Project/ConcreteProject )
