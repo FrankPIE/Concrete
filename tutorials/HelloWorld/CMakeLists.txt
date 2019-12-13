@@ -28,5 +28,5 @@ CONCRETE_METHOD_ADD_TARGET(
         "Execute"
     SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp    
-    UNITY_BUILD
+    UNITY_BUILD OFF
 )
