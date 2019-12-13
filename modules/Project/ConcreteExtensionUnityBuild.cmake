@@ -39,6 +39,12 @@ FUNCTION(CONCRETE_INTERNAL_METHOD_IS_USE_UNITY_BUILD TARGET OUTPUT)
         SET(unityBuild 0)
     ENDIF(${unityBuildSet})
 
+    # the target is use unity build
+    # globalFlagSet globalFlag targetFlagSet targetFlag Result
+    # 0             0          1             1          1
+    # 1             /          1             1          1
+    # 1             1          0             0          1
+    # other                                             0
     IF(NOT ${globalUnityBuildSet})
         IF(${unityBuild})
             SET(${OUTPUT} 1 PARENT_SCOPE)
