@@ -30,3 +30,11 @@ DEFINE_PROPERTY(
     BRIEF_DOCS "Set the folder name."
     FULL_DOCS  "Use to organize targets in an IDE. Chain up to DIRECTORY."
 )
+
+# use win32 unicode
+DEFINE_PROPERTY(
+    TARGET
+    PROPERTY USE_WIN32_UNICODE
+    BRIEF_DOCS "Use win32 unicode macro"
+    FULL_DOCS  "Use win32 unicode macro, _UNICODE and UNICODE"
+)

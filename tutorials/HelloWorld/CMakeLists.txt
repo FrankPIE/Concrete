@@ -21,4 +21,12 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10.3)
 
-ADD_EXECUTABLE(HelloWorld ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+CONCRETE_METHOD_ADD_TARGET(
+    TARGET_NAME 
+        HelloWorld
+    TYPE        
+        "Execute"
+    SOURCES     
+        PRIVATE 
+            ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+)
