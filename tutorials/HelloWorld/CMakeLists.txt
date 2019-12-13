@@ -26,7 +26,7 @@ CONCRETE_METHOD_ADD_TARGET(
         HelloWorld
     TYPE        
         "Execute"
-    SOURCES     
-        PRIVATE 
-            ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp    
+    UNITY_BUILD
 )

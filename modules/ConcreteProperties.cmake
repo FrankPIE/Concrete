@@ -22,6 +22,13 @@
 # include once
 INCLUDE_GUARD(GLOBAL)
 
+DEFINE_PROPERTY(
+    GLOBAL
+    PROPERTY USE_UNITY_BUILD_FOR_ALL_TARGETS
+    BRIEF_DOCS "unity build for all targets"
+    FULL_DOCS  "unity build for all targets, use cotire cmake library"
+)
+
 # Chain up FOLDER property to DIRECTORY Scope
 DEFINE_PROPERTY(
     TARGET
@@ -37,4 +44,12 @@ DEFINE_PROPERTY(
     PROPERTY USE_WIN32_UNICODE
     BRIEF_DOCS "Use win32 unicode macro"
     FULL_DOCS  "Use win32 unicode macro, _UNICODE and UNICODE"
+)
+
+# use cotire module
+DEFINE_PROPERTY(
+    TARGET
+    PROPERTY USE_UNITY_BUILD
+    BRIEF_DOCS "unity build for the target"
+    FULL_DOCS  "unity build for the target, use cotire cmake library"
 )

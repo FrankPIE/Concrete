@@ -22,7 +22,7 @@
 INCLUDE_GUARD(GLOBAL)
 
 FUNCTION(CONCRETE_METHOD_ADD_TARGET)
-    SET(options CREATE_ONLY IMPORTED IMPORTED_GLOBAL)
+    SET(options CREATE_ONLY IMPORTED IMPORTED_GLOBAL EXCLUDE_FROM_ALL UNITY_BUILD)
     SET(singleValueKey TARGET_NAME TYPE ALIAS_TARGET)
     SET(mulitValueKey PROPERTIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_DEFINITIONS SOURCES)
 
@@ -46,31 +46,46 @@ FUNCTION(CONCRETE_METHOD_ADD_TARGET)
         IF(${_CONCRETE_IMPORTED_GLOBAL})
             LIST(APPEND imported GLOBAL)
         ENDIF(${_CONCRETE_IMPORTED_GLOBAL})
+
+        SET(importedOrSources ${imported})
+    ELSE()
+        IF(_CONCRETE_SOURCES)
+            SET(sources ${_CONCRETE_SOURCES})
+        ENDIF(_CONCRETE_SOURCES)
+
+        SET(importedOrSources ${sources})
+
+        IF(${_CONCRETE_EXCLUDE_FROM_ALL})
+            SET(excludeFromAll EXCLUDE_FROM_ALL)
+        ENDIF(${_CONCRETE_EXCLUDE_FROM_ALL})
     ENDIF(${_CONCRETE_IMPORTED})
+
+    SET(cotireBuild 1)
 
     IF(_CONCRETE_TYPE)
         IF(${_CONCRETE_TYPE} STREQUAL "Interface")
             ADD_LIBRARY(${targetName} INTERFACE ${imported})
+            SET(cotireBuild 0)
         ENDIF(${_CONCRETE_TYPE} STREQUAL "Interface")
 
         IF(${_CONCRETE_TYPE} STREQUAL "Execute")
-            ADD_EXECUTABLE(${targetName})
+            ADD_EXECUTABLE(${targetName} ${sources})
         ENDIF(${_CONCRETE_TYPE} STREQUAL "Execute")
 
         IF(${_CONCRETE_TYPE} STREQUAL "Static")
-            ADD_LIBRARY(${targetName} STATIC ${imported})
+            ADD_LIBRARY(${targetName} STATIC ${importedOrSources} ${excludeFromAll})
         ENDIF(${_CONCRETE_TYPE} STREQUAL "Static")
 
         IF(${_CONCRETE_TYPE} STREQUAL "Shared")
-            ADD_LIBRARY(${targetName} SHARED ${imported})
+            ADD_LIBRARY(${targetName} SHARED ${importedOrSources} ${excludeFromAll})
         ENDIF(${_CONCRETE_TYPE} STREQUAL "Shared")
 
         IF(${_CONCRETE_TYPE} STREQUAL "Module")    
-            ADD_LIBRARY(${targetName} Module ${imported})
+            ADD_LIBRARY(${targetName} Module ${importedOrSources} ${excludeFromAll})
         ENDIF(${_CONCRETE_TYPE} STREQUAL "Module")
 
         IF(${_CONCRETE_TYPE} STREQUAL "Object")    
-            ADD_LIBRARY(${targetName} OBJECT ${imported})
+            ADD_LIBRARY(${targetName} OBJECT ${importedOrSources})
         ENDIF(${_CONCRETE_TYPE} STREQUAL "Object")
 
         IF(${_CONCRETE_TYPE} STREQUAL "Unknown")    
@@ -88,7 +103,21 @@ FUNCTION(CONCRETE_METHOD_ADD_TARGET)
         MESSAGE(FATAL_ERROR "target must have type")
     ENDIF(_CONCRETE_TYPE)
 
+    IF(${_CONCRETE_UNITY_BUILD})
+        SET_PROPERTY(TARGET ${targetName} PROPERTY USE_UNITY_BUILD ON)
+    ENDIF(${_CONCRETE_UNITY_BUILD})
+
+    IF(${cotireBuild})
+        CONCRETE_INTERNAL_METHOD_IS_USE_UNITY_BUILD(${targetName} useUnityBuild)
+    ELSE()
+        SET(useUnityBuild 0)
+    ENDIF(${cotireBuild})
+
     IF(${_CONCRETE_CREATE_ONLY})
+        IF(${cotireBuild} AND ${useUnityBuild})
+            cotire(${targetName})
+        ENDIF(${cotireBuild} AND ${useUnityBuild})
+        
         RETURN()
     ENDIF(${_CONCRETE_CREATE_ONLY})
 
@@ -118,7 +147,7 @@ FUNCTION(CONCRETE_METHOD_ADD_TARGET)
         TARGET_COMPILE_DEFINITIONS(${targetName} ${_CONCRETE_COMPILE_DEFINITIONS})
     ENDIF(_CONCRETE_COMPILE_DEFINITIONS)
 
-    IF(_CONCRETE_SOURCES)
-        TARGET_SOURCES(${targetName} ${_CONCRETE_SOURCES})
-    ENDIF(_CONCRETE_SOURCES)
+    IF(${cotireBuild} AND ${useUnityBuild})
+        cotire(${targetName})
+    ENDIF(${cotireBuild} AND ${useUnityBuild})
 ENDFUNCTION(CONCRETE_METHOD_ADD_TARGET)

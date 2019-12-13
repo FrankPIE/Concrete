@@ -23,6 +23,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10.3)
 
 INCLUDE_GUARD(GLOBAL)
 
+INCLUDE(Extension/cotire/CMake/cotire)
+
 # Concrete modules
 INCLUDE( ConcreteVariables )
 INCLUDE( ConcreteProperties )
@@ -36,6 +38,7 @@ INCLUDE( Unitity/ConcreteStringHelper )
 INCLUDE( Environment/ConcreteDetectSystemInfo )
 
 # Concrete Project modules
+INCLUDE( Project/ConcreteExtensionUnityBuild)
 INCLUDE( Project/ConcreteTarget )
 INCLUDE( Project/ConcreteDirectory )
 INCLUDE( Project/ConcreteProject )
