@@ -61,11 +61,13 @@ FUNCTION(CONCRETE_METHOD_ADD_TARGET)
     ENDIF(${_CONCRETE_IMPORTED})
 
     SET(cotireBuild 1)
+    SET(onlyInteface OFF)
 
     IF(_CONCRETE_TYPE)
         IF(${_CONCRETE_TYPE} STREQUAL "Interface")
             ADD_LIBRARY(${targetName} INTERFACE ${imported})
             SET(cotireBuild 0)
+            SET(onlyInteface ON)
         ENDIF(${_CONCRETE_TYPE} STREQUAL "Interface")
 
         IF(${_CONCRETE_TYPE} STREQUAL "Execute")
@@ -133,10 +135,16 @@ FUNCTION(CONCRETE_METHOD_ADD_TARGET)
         TARGET_LINK_DIRECTORIES(${targetName} ${_CONCRETE_LINK_DIRECTORIES})
     ENDIF(_CONCRETE_LINK_DIRECTORIES)
 
-    IF(_CONCRETE_LINK_LIBRARIES)
-        TARGET_LINK_LIBRARIES(${targetName} PRIVATE $<TARGET_NAME:ConcreteInterface> ${_CONCRETE_LINK_LIBRARIES})
+    IF(${onlyInteface})
+        SET(concreteInterfaceKeyWord INTERFACE)
     ELSE()
-        TARGET_LINK_LIBRARIES(${targetName} PRIVATE $<TARGET_NAME:ConcreteInterface>)
+        SET(concreteInterfaceKeyWord PRIVATE)
+    ENDIF(${onlyInteface})
+
+    IF(_CONCRETE_LINK_LIBRARIES)
+        TARGET_LINK_LIBRARIES(${targetName} ${concreteInterfaceKeyWord} $<TARGET_NAME:ConcreteInterface> ${_CONCRETE_LINK_LIBRARIES})
+    ELSE()
+        TARGET_LINK_LIBRARIES(${targetName} ${concreteInterfaceKeyWord} $<TARGET_NAME:ConcreteInterface>)
     ENDIF(_CONCRETE_LINK_LIBRARIES)
 
     IF(_CONCRETE_INCLUDE_DIRECTORIES)
