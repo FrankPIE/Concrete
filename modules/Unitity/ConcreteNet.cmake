@@ -21,3 +21,44 @@
 
 INCLUDE_GUARD(GLOBAL)
 
+FUNCTION(CONCRETE_METHOD_DOWNLOAD_FILE URI DEST_PATH HASH)
+    SET(options)
+    SET(singleValueKey HASH_TYPE)
+    SET(mulitValueKey)
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueKey}"
+        "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    IF (_CONCRETE_HASH_TYPE)
+        SET(hashType ${_CONCRETE_HASH_TYPE})
+    ELSE()
+        SET(hashType SHA1)
+    ENDIF(_CONCRETE_HASH_TYPE)
+
+    SET(target ${CONCRETE_PROJECT_ROOT_DIRECTORY}/${DEST_PATH})
+
+    IF (EXISTS ${target})
+        CONCRETE_METHOD_HASH(${target} ${hashType} value)
+
+        IF (${value} STREQUAL ${HASH})
+            RETURN()
+        ENDIF(${value} STREQUAL ${HASH})
+
+        CONCRETE_METHOD_REMOVE_FILE(FILES ${target})
+    ENDIF(EXISTS ${target})
+
+    SET(inactivityTimeout 5)
+    SET(timeout 15)
+
+    FILE(DOWNLOAD ${URI} ${target} 
+        INACTIVITY_TIMEOUT ${inactivityTimeout}
+        SHOW_PROGRESS
+        TIMEOUT ${timeout}
+        EXPECTED_HASH ${hashType}=${HASH}
+    )
+ENDFUNCTION(CONCRETE_METHOD_DOWNLOAD_FILE)

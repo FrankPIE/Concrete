@@ -33,6 +33,7 @@ INCLUDE( ConcreteProperties )
 INCLUDE( Unitity/ConcreteDebug )
 INCLUDE( Unitity/ConcreteFileHelper )
 INCLUDE( Unitity/ConcreteStringHelper )
+INCLUDE( Unitity/ConcreteNet )
 
 # Concrete Envionment modules
 INCLUDE( Environment/ConcreteDetectSystemInfo )
