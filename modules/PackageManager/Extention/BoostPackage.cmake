@@ -114,10 +114,10 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
     STRING(REPLACE "." "_" boostPackageName ${targetPackageVersion})
 
     SET(boostPackageURLS 
-        "HTTPS://DL.BINTRAY.COM/BOOSTORG/RELEASE/${TARGETPACKAGEVERSION}/SOURCE/BOOST_${BOOSTPACKAGENAME}.TAR.GZ"
-        "HTTPS://GITHUB.COM/BOOSTORG/BOOST/ARCHIVE/BOOST-${TARGETPACKAGEVERSION}.TAR.GZ"
-        "HTTPS://SOURCEFORGE.NET/PROJECTS/BOOST/FILES/BOOST/${TARGETPACKAGEVERSION}/BOOST_${BOOSTPACKAGENAME}.TAR.GZ"
-        "HTTP://MIRROR.NIENBO.COM/BOOST/${TARGETPACKAGEVERSION}/BOOST_${BOOSTPACKAGENAME}.TAR.GZ"
+        "https://dl.bintray.com/boostorg/release/${targetPackageVersion}/source/boost_${boostPackageName}.tar.gz"
+        "https://github.com/boostorg/boost/archive/boost-${targetPackageVersion}.tar.gz"
+        "https://sourceforge.net/projects/boost/files/boost/${targetPackageVersion}/boost_${boostPackageName}.tar.gz"
+        "http://mirror.nienbo.com/boost/${targetPackageVersion}/boost_${boostPackageName}.tar.gz"
     )
 
     IF (DEFINED Boost_${boostPackageName}_HASH_SHA256)
