@@ -93,6 +93,9 @@ SET(CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY  CACHE PATH "global binary files ge
 # prject library files generate directory
 SET(CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY CACHE PATH "global library files generate directory" FORCE)
 
+# project package config directory
+SET(CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY CACHE PATH "global package config directory" FORCE)
+
 # [[ INTERNAL ]]
 # project name
 SET(CONCRETE_PROJECT_NAME CACHE INTERNAL "project name" FORCE)

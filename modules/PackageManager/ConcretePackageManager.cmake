@@ -24,7 +24,7 @@ INCLUDE_GUARD(GLOBAL)
 INCLUDE(FetchContent)
 INCLUDE(CMakeParseArguments)
 
-FUNCTION(__CONCRETE_FETCH_CONTENT PACKAGE_NAME)
+FUNCTION(__fetchContent PACKAGE_NAME)
     SET(options)
 
     SET(urlDownloadSingleValueKey
@@ -58,6 +58,9 @@ FUNCTION(__CONCRETE_FETCH_CONTENT PACKAGE_NAME)
             COMMIT_TAG
             USERNAME
             PASSWORD
+            SOURCE_DIR
+            BINARY_DIR
+            SUBBUILD_DIR
             ${urlDownloadSingleValueKey}
             ${gitCloneSingleValueKey}
             ${svnCloneSingleValueKey}
@@ -65,7 +68,7 @@ FUNCTION(__CONCRETE_FETCH_CONTENT PACKAGE_NAME)
         )
 
     SET(urlDownloadMulitValueKey
-            URL
+            LINKS
             HTTP_HEADER
         )
 
@@ -77,6 +80,7 @@ FUNCTION(__CONCRETE_FETCH_CONTENT PACKAGE_NAME)
     SET(mulitValueKey
         ${urlDownloadMulitValueKey}
         ${gitCloneMulitValueKey}
+        UPDATE_PATCH_OPTIONS
         )
 
     CMAKE_PARSE_ARGUMENTS(
@@ -89,19 +93,19 @@ FUNCTION(__CONCRETE_FETCH_CONTENT PACKAGE_NAME)
 
     SET(packageName ${PACKAGE_NAME})
 
-    IF(NOT DEFINED _CONCRETE_PACKAGE_TYPE)
+    IF(NOT _CONCRETE_PACKAGE_TYPE)
         MESSAGE(FATAL_ERROR "can't find package type")
-    ENDIF(NOT DEFINED _CONCRETE_PACKAGE_TYPE)
+    ENDIF(NOT _CONCRETE_PACKAGE_TYPE)
 
     SET(fetchContentParamters)
 
     # URL Type
     IF(${_CONCRETE_PACKAGE_TYPE} STREQUAL "URL")
-        IF(_CONCRETE_URL)
-            SET(packageTarget ${_CONCRETE_URL})
+        IF(_CONCRETE_LINKS)
+            SET(packageTarget ${_CONCRETE_LINKS})
         ELSE()
             MESSAGE(FATAL_ERROR "can't find url address")
-        ENDIF(_CONCRETE_URL)    
+        ENDIF(_CONCRETE_LINKS)    
 
         LIST(APPEND fetchContentParamters ${packageName} URL ${packageTarget})
 
@@ -114,12 +118,8 @@ FUNCTION(__CONCRETE_FETCH_CONTENT PACKAGE_NAME)
         ENDIF(_CONCRETE_TARGET_NAME)
 
         IF (_CONCRETE_TIMEOUT)
-            SET(timeout ${_CONCRETE_TIMEOUT})
-        ELSE()
-            SET(timeout 5)
+            LIST(APPEND fetchContentParamters TIMEOUT ${_CONCRETE_TIMEOUT})
         ENDIF(_CONCRETE_TIMEOUT)
-
-        LIST(APPEND fetchContentParamters TIMEOUT ${timeout})
 
         IF (_CONCRETE_USERNAME)
             LIST(APPEND fetchContentParamters HTTP_USERNAME ${_CONCRETE_USERNAME})
@@ -209,17 +209,192 @@ FUNCTION(__CONCRETE_FETCH_CONTENT PACKAGE_NAME)
         ENDIF(${_CONCRETE_PACKAGE_TYPE} STREQUAL "GIT")
     ENDIF(${_CONCRETE_PACKAGE_TYPE} STREQUAL "URL")
 
-
     IF (_CONCRETE_DOWNLOAD_COMMAND)
         LIST(APPEND fetchContentParamters DOWNLOAD_COMMAND ${_CONCRETE_DOWNLOAD_COMMAND})
     ENDIF(_CONCRETE_DOWNLOAD_COMMAND)
 
-ENDFUNCTION(__CONCRETE_FETCH_CONTENT)
+    IF (_CONCRETE_UPDATE_PATCH_OPTIONS)
+        LIST(APPEND fetchContentParamters ${_CONCRETE_UPDATE_PATCH_OPTIONS})
+    ENDIF(_CONCRETE_UPDATE_PATCH_OPTIONS)
 
-FUNCTION(CONCRETE_FIND_PACKAGE PACKAGE_NAME)
-    SET(options)
+    IF(_CONCRETE_SOURCE_DIR)
+        SET(sourceDirectory ${_CONCRETE_SOURCE_DIR})
+    ELSE()
+        SET(sourceDirectory ${CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY}/${packageName}/source)
+    ENDIF(_CONCRETE_SOURCE_DIR)
 
-    SET(singleValueKey)
+    IF (_CONCRETE_BINARY_DIR)
+        SET(binaryDirectory ${_CONCRETE_BINARY_DIR})
+    ELSE()
+        SET(binaryDirectory ${CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY}/${packageName}/install)
+    ENDIF(_CONCRETE_BINARY_DIR)
+
+    IF (_CONCRETE_SUBBUILD_DIR)
+        SET(subBuildDirectory ${_CONCRETE_SUBBUILD_DIR})
+    ELSE()
+        SET(subBuildDirectory ${CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY}/${packageName}/middle)
+    ENDIF(_CONCRETE_SUBBUILD_DIR)
+
+    LIST(APPEND fetchContentParamters 
+        SOURCE_DIR ${sourceDirectory}
+        BINARY_DIR ${binaryDirectory}
+        SUBBUILD_DIR ${subBuildDirectory}    
+        )
+    
+    FetchContent_Declare(${packageName} ${fetchContentParamters})
+ENDFUNCTION(__fetchContent)
+
+FUNCTION(__executeProcess PACKAGE_NAME RESULT)
+    SET(options DOWNLOAD_ONLY)
+
+    SET(singleValueKey WORKING_DIRECTORY)
+
+    SET(mulitValueKey 
+            COMMANDS            
+        )
+
+    STRING(TOLOWER ${packageName} lcPackageName)
+
+    SET(newArgs ${ARGN})
+
+    STRING(REPLACE "PACKAGE_SOURCE_DIR" "${${lcPackageName}_SOURCE_DIR}" newArgs ${newArgs})
+    STRING(REPLACE "PACKAGE_BINARY_DIR" "${${lcPackageName}_BINARY_DIR}" newArgs ${newArgs})
+    STRING(REPLACE "PACKAGE_SUBBUILD_DIR" "${${lcPackageName}_SUBBUILD_DIR}" newArgs ${newArgs})
+
+    SEPARATE_ARGUMENTS(newArgs)
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueKey}"
+        "${mulitValueKey}"
+        ${newArgs}
+    )
+
+    IF (_CONCRETE_WORKING_DIRECTORY)
+        SET(workingDirectory ${${lcPackageName}_SOURCE_DIR})
+    ELSE()
+        SET(workingDirectory ${_CONCRETE_WORKING_DIRECTORY})
+    ENDIF(_CONCRETE_WORKING_DIRECTORY)
+
+    IF (_CONCRETE_COMMANDS)
+        SET(command ${_CONCRETE_COMMANDS})
+
+        MESSAGE(STATUS "Command:${command}")
+        
+        EXECUTE_PROCESS(
+            COMMAND ${command}
+            WORKING_DIRECTORY "${workingDirectory}"
+            RESULT_VARIABLE result
+        )
+
+        IF (${result} STREQUAL "0")            
+            SET(${RESULT} ${result} PARENT_SCOPE)
+        ELSE()
+            MESSAGE(FATAL_ERROR "${result}")
+        ENDIF()
+    ENDIF(_CONCRETE_COMMANDS)
+ENDFUNCTION(__executeProcess)
+
+FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
+    SET(options DOWNLOAD_ONLY)
+
+    SET(singleValueKey VERSION)
+
+    SET(mulitValueKey 
+            DOWNLOAD_OPTIONS 
+            BUILD_COMMANDS 
+            CONFIGURE_COMMANDS
+        )
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueKey}"
+        "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    SET(packageName ${PACKAGE_NAME})
+
+    IF (_CONCRETE_VERSION)
+        GET_PROPERTY(packageVersionDefined CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_VERSION PROPERTY VALUE SET)
+
+        IF (${packageVersionDefined})
+            GET_PROPERTY(packageVersion CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_VERSION PROPERTY VALUE)
+
+            IF (NOT ${packageVersion} VERSION_EQUAL ${_CONCRETE_VERSION})
+                GET_PROPERTY(packageBuildedDefined CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE SET)
+
+                IF (${packageBuildedDefined})
+                    SET_PROPERTY(CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE FALSE) 
+                ELSE()   
+                    SET(CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED FALSE CACHE BOOL "${packageName} builded flag" FORCE)
+                ENDIF()
+            ENDIF()
+
+            SET_PROPERTY(CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_VERSION PROPERTY VALUE ${_CONCRETE_VERSION})
+        ELSE()
+            SET(CONCRETE_PACKAGE_MANAGER_${packageName}_VERSION ${_CONCRETE_VERSION} CACHE INTERNAL "${packageName} version" FORCE)
+        ENDIF(${packageVersionDefined})
+    ENDIF(_CONCRETE_VERSION)
+
+    IF (_CONCRETE_DOWNLOAD_OPTIONS)
+        __fetchContent(${packageName} ${_CONCRETE_DOWNLOAD_OPTIONS})
+
+        STRING(TOLOWER ${packageName} lcPackageName)
+
+        FetchContent_GetProperties(${packageName})
+
+        IF (NOT ${lcPackageName}_POPULATED)
+            FetchContent_Populate(${packageName})
+
+            SET(${lcPackageName}_SOURCE_DIR ${${lcPackageName}_SOURCE_DIR} PARENT_SCOPE)
+            SET(${lcPackageName}_BINARY_DIR ${${lcPackageName}_BINARY_DIR} PARENT_SCOPE)
+            SET(${lcPackageName}_SUBBUILD_DIR ${${lcPackageName}_SUBBUILD_DIR} PARENT_SCOPE)
+
+            GET_PROPERTY(packageBuildedDefined CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE SET)
+
+            IF (NOT ${packageBuildedDefined})
+                SET(CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED FALSE CACHE BOOL "${packageName} builded flag" FORCE)
+            ENDIF()
+
+            IF (${DOWNLOAD_ONLY})
+                RETURN()
+            ENDIF(${DOWNLOAD_ONLY})
+
+            IF (NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
+                MESSAGE(STATUS "Build")
+                # Build Step
+                IF (_CONCRETE_CONFIGURE_COMMANDS)
+                    FOREACH(var ${_CONCRETE_BUILD_COMMANDS})
+                        CONCRETE_METHOD_PROJECT_CONFIGURE_FILE(${var})
+                    ENDFOREACH()                    
+                ENDIF(_CONCRETE_CONFIGURE_COMMANDS)
+
+                IF (_CONCRETE_BUILD_COMMANDS)
+                    FOREACH(var ${_CONCRETE_BUILD_COMMANDS})
+                        __executeProcess(${packageName} result ${var})
+
+                        IF (NOT ${result} STREQUAL "0")
+                            BREAK()
+                        ENDIF()
+                    ENDFOREACH()                    
+
+                    IF (${result} STREQUAL "0")
+                        SET_PROPERTY(CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE TRUE)    
+                    ENDIF()
+                ENDIF(_CONCRETE_BUILD_COMMANDS)
+            ENDIF(NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
+        ENDIF(NOT ${lcPackageName}_POPULATED)
+    ENDIF(_CONCRETE_DOWNLOAD_OPTIONS)
+
+ENDFUNCTION(__DownloadAndBuildPackage)
+
+FUNCTION(CONCRETE_METHOD_FIND_PACKAGE PACKAGE_NAME)
+    SET(options USE_BINARY_DIR_AS_PACKAGE_ROOT)
+
+    SET(singleValueKey PACKAGE_ROOT)
 
     SET(mulitValueKey FIND_PACKAGE_ARGUMENTS)
 
@@ -231,10 +406,42 @@ FUNCTION(CONCRETE_FIND_PACKAGE PACKAGE_NAME)
         ${ARGN}
     )
 
-    __CONCRETE_FETCH_CONTENT(${ARGN})
+    __DownloadAndBuildPackage(${PACKAGE_NAME} ${ARGN})
 
-ENDFUNCTION(CONCRETE_FIND_PACKAGE)
+    STRING(TOLOWER ${PACKAGE_NAME} lcPackageName)
 
-MACRO(CONCRETE_ENABLE_PACKAGE_MANAGER_VERBOSE ENABLE)
-    SET(FETCHCONTENT_QUIET ${ENABLE})
-ENDMACRO(CONCRETE_ENABLE_PACKAGE_MANAGER_VERBOSE)
+    IF(${_CONCRETE_USE_BINARY_DIR_AS_PACKAGE_ROOT})
+        SET(pakcageRoot ${${lcPackageName}_BINARY_DIR})
+    ElSE()
+        IF(_CONCRETE_PACKAGE_ROOT)
+            SET(pakcageRoot ${_CONCRETE_PACKAGE_ROOT})
+        ELSE()
+            SET(pakcageRoot ${${lcPackageName}_SOURCE_DIR})
+        ENDIF()
+    ENDIF()
+
+    LIST(APPEND CMAKE_PREFIX_PATH ${pakcageRoot})
+
+    FIND_PACKAGE(${PACKAGE_NAME} ${_CONCRETE_FIND_PACKAGE_ARGUMENTS})
+ENDFUNCTION(CONCRETE_METHOD_FIND_PACKAGE)
+
+FUNCTION(CONCRETE_METHOD_SET_PACKAGE_MANAGER_PROPERTY)
+    SET(singleValueProperty VERBOSE)
+    SET(mulitValueProperty)
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueProperty}"
+        "${mulitValueProperty}"
+        ${ARGN}
+    )
+
+    IF(_CONCRETE_VERBOSE)
+        IF (${_CONCRETE_VERBOSE})
+            SET(FETCHCONTENT_QUIET OFF PARENT_SCOPE)
+        ELSE()
+            SET(FETCHCONTENT_QUIET ON PARENT_SCOPE)
+        ENDIF(${_CONCRETE_VERBOSE})
+    ENDIF(_CONCRETE_VERBOSE)
+ENDFUNCTION(CONCRETE_METHOD_SET_PACKAGE_MANAGER_PROPERTY)
