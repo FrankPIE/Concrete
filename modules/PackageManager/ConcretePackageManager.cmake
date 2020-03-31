@@ -232,7 +232,7 @@ FUNCTION(__fetchContent PACKAGE_NAME)
     IF (_CONCRETE_SUBBUILD_DIR)
         SET(subBuildDirectory ${_CONCRETE_SUBBUILD_DIR})
     ELSE()
-        SET(subBuildDirectory ${CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY}/${packageName}/middle)
+        SET(subBuildDirectory ${CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY}/${packageName}/cmake-project)
     ENDIF(_CONCRETE_SUBBUILD_DIR)
 
     LIST(APPEND fetchContentParamters 
