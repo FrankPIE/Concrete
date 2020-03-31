@@ -260,8 +260,8 @@ FUNCTION(__executeProcess PACKAGE_NAME RESULT)
     STRING(REPLACE "PACKAGE_SOURCE_DIR" "${${lcPackageName}_SOURCE_DIR}" newArgs ${newArgs})
     STRING(REPLACE "PACKAGE_BINARY_DIR" "${${lcPackageName}_BINARY_DIR}" newArgs ${newArgs})
     STRING(REPLACE "PACKAGE_SUBBUILD_DIR" "${${lcPackageName}_SUBBUILD_DIR}" newArgs ${newArgs})
-
-    SEPARATE_ARGUMENTS(newArgs)
+    
+    CONCRETE_METHOD_SEPARATE_ARGUMENTS(${newArgs} newArgs "'" " ")
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -272,15 +272,15 @@ FUNCTION(__executeProcess PACKAGE_NAME RESULT)
     )
 
     IF (_CONCRETE_WORKING_DIRECTORY)
-        SET(workingDirectory ${${lcPackageName}_SOURCE_DIR})
-    ELSE()
         SET(workingDirectory ${_CONCRETE_WORKING_DIRECTORY})
+    ELSE()
+        SET(workingDirectory ${${lcPackageName}_SOURCE_DIR})
     ENDIF(_CONCRETE_WORKING_DIRECTORY)
 
     IF (_CONCRETE_COMMANDS)
         SET(command ${_CONCRETE_COMMANDS})
 
-        MESSAGE(STATUS "Command:${command}")
+        MESSAGE(STATUS "Build-Command : ${command}")
         
         EXECUTE_PROCESS(
             COMMAND ${command}
@@ -305,6 +305,7 @@ FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
             DOWNLOAD_OPTIONS 
             BUILD_COMMANDS 
             CONFIGURE_COMMANDS
+            CREATE_DIRECTORYS
         )
 
     CMAKE_PARSE_ARGUMENTS(
@@ -359,18 +360,27 @@ FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
                 SET(CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED FALSE CACHE BOOL "${packageName} builded flag" FORCE)
             ENDIF()
 
-            IF (${DOWNLOAD_ONLY})
+            IF (${_CONCRETE_DOWNLOAD_ONLY})
                 RETURN()
-            ENDIF(${DOWNLOAD_ONLY})
+            ENDIF(${_CONCRETE_DOWNLOAD_ONLY})
 
             IF (NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
-                MESSAGE(STATUS "Build")
                 # Build Step
                 IF (_CONCRETE_CONFIGURE_COMMANDS)
                     FOREACH(var ${_CONCRETE_BUILD_COMMANDS})
                         CONCRETE_METHOD_PROJECT_CONFIGURE_FILE(${var})
                     ENDFOREACH()                    
                 ENDIF(_CONCRETE_CONFIGURE_COMMANDS)
+
+                IF (_CONCRETE_CREATE_DIRECTORYS)
+                    FOREACH(var ${_CONCRETE_CREATE_DIRECTORYS})
+                        STRING(REPLACE "PACKAGE_SOURCE_DIR" "${${lcPackageName}_SOURCE_DIR}" var ${var})
+                        STRING(REPLACE "PACKAGE_BINARY_DIR" "${${lcPackageName}_BINARY_DIR}" var ${var})
+                        STRING(REPLACE "PACKAGE_SUBBUILD_DIR" "${${lcPackageName}_SUBBUILD_DIR}" var ${var})
+
+                        CONCRETE_METHOD_CREATE_DIRECTORYS(DIRECTORYS ${var} ABSOULT_PATH)
+                    ENDFOREACH()                    
+                ENDIF()
 
                 IF (_CONCRETE_BUILD_COMMANDS)
                     FOREACH(var ${_CONCRETE_BUILD_COMMANDS})
@@ -391,6 +401,7 @@ FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
 
 ENDFUNCTION(__DownloadAndBuildPackage)
 
+#TODO:: ADD Muilt Package
 FUNCTION(CONCRETE_METHOD_FIND_PACKAGE PACKAGE_NAME)
     SET(options USE_BINARY_DIR_AS_PACKAGE_ROOT)
 
