@@ -26,7 +26,7 @@ INCLUDE( CMakeParseArguments )
 
 # create new directorys
 FUNCTION(CONCRETE_METHOD_CREATE_DIRECTORYS)
-    SET(options)
+    SET(options ABSOULT_PATH)
     SET(singleValueKey)
     SET(mulitValueKey DIRECTORYS)
 
@@ -40,11 +40,13 @@ FUNCTION(CONCRETE_METHOD_CREATE_DIRECTORYS)
 
     IF (_CONCRETE_DIRECTORYS)
         FOREACH(directory ${_CONCRETE_DIRECTORYS})
-            SET(target ${CONCRETE_PROJECT_ROOT_DIRECTORY}/${directory})
-
-            IF (EXISTS ${target})
-                MESSAGE(WARNING "${target} has created!")
+            IF (_CONCRETE_ABSOULT_PATH)
+                SET(target ${directory})
             ELSE()
+                SET(target ${CONCRETE_PROJECT_ROOT_DIRECTORY}/${directory})
+            ENDIF()
+
+            IF (NOT EXISTS ${target})
                 FILE(MAKE_DIRECTORY ${target})
 
                 IF (NOT EXISTS ${target})
@@ -52,7 +54,7 @@ FUNCTION(CONCRETE_METHOD_CREATE_DIRECTORYS)
                 ELSE()
                     MESSAGE(STATUS "CREATE ${target} OK!")
                 ENDIF(NOT EXISTS ${target})    
-            ENDIF(EXISTS ${target})
+            ENDIF()
         ENDFOREACH(directory ${_CONCRETE_DIRECTORYS})
     ENDIF(_CONCRETE_DIRECTORYS)
 ENDFUNCTION(CONCRETE_METHOD_CREATE_DIRECTORYS)
