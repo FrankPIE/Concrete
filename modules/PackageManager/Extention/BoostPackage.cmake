@@ -78,16 +78,17 @@ FUNCTION(__BoostGetToolset TOOLSET TOOLSET_VERSION)
 ENDFUNCTION(__BoostGetToolset)
 
 FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
-    SET(options)
+    SET(options STATIC SHARED SINGLE_THREADING MULTI_THREADING RUNTIME_LINK_STATIC)
 
-    SET(singleValueKey 
+    SET(singleValueKey
         TARGET_NAME 
         VERSION
         TOOLSET
         TOOLSET_VERSION
+        DOWNLOAD_METHOD
         )
 
-    SET(mulitValueKey FIND_PACKAGE_ARGUMENTS)
+    SET(mulitValueKey WITH_BUILD WITHOUT_BUILD FIND_PACKAGE_ARGUMENTS)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE_BOOST
@@ -110,6 +111,46 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
     ELSE()
         SET(targetPackageVersion "1.72.0")
     ENDIF(_CONCRETE_BOOST_VERSION)
+
+    SET(linkOptions)
+
+    IF (_CONCRETE_BOOST_STATIC)        
+        STRING(APPEND linkOptions "link=static ")
+    ENDIF()
+
+    IF (_CONCRETE_BOOST_SHARED)        
+        STRING(APPEND linkOptions "link=shared")
+    ENDIF()
+
+    SET(threadingOptions)
+
+    IF (_CONCRETE_BOOST_SINGLE_THREADING)
+        STRING(APPEND threadingOptions "threading=single ")
+    ENDIF()
+
+    IF (_CONCRETE_BOOST_MULTI_THREADING)
+        STRING(APPEND threadingOptions "threading=multi ")
+    ENDIF()
+
+    SET(withBuild)
+    IF(_CONCRETE_BOOST_WITH_BUILD)
+        FOREACH(var ${_CONCRETE_BOOST_WITH_BUILD})
+            STRING(APPEND withBuild "--without-${var}")
+        ENDFOREACH()
+    ENDIF()
+
+    SET(withoutBuild)
+    IF(_CONCRETE_BOOST_WITHOUT_BUILD)
+        FOREACH(var ${_CONCRETE_BOOST_WITHOUT_BUILD})
+            STRING(APPEND withoutBuild "--without-${var}")
+        ENDFOREACH()
+    ENDIF()
+
+    SET(runtimeLinkOptions)
+
+    IF(_CONCRETE_BOOST_RUNTIME_LINK_STATIC)
+        STRING(APPEND runtimeLinkOptions "runtime-link=static ")
+    ENDIF()
 
     STRING(REPLACE "." "_" boostPackageName ${targetPackageVersion})
 
@@ -146,18 +187,37 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
         SET(addressModel "64")
     ENDIF()
 
+    SET(downloadOptions)
+
+    IF(_CONCRETE_BOOST_DOWNLOAD_METHOD)
+        IF(${_CONCRETE_BOOST_DOWNLOAD_METHOD} STREQUAL "URL")
+            SET(downloadMethod "URL")
+        ELSEIF(${_CONCRETE_BOOST_DOWNLOAD_METHOD} STREQUAL "GIT")
+            SET(downloadMethod "GIT")
+        ENDIF()
+    ELSE()
+        SET(downloadMethod "URL")
+    ENDIF()
+
+    IF(${downloadMethod} STREQUAL "URL")
+        SET(downloadOptions PACKAGE_TYPE URL LINKS ${boostPackageURLS} ${hashCheck})
+    ELSEIF(${downloadMethod} STREQUAL "GIT")
+        SET(downloadOptions PACKAGE_TYPE GIT REPOSITORY https://github.com/boostorg/boost.git COMMIT_TAG boost-${targetPackageVersion} GIT_SUBMODULES_RECURSE ON)
+    ELSE()
+        MESSAGE(FATAL_ERROR "unsupport method")
+    ENDIF()
+
     CONCRETE_METHOD_FIND_PACKAGE(
         ${targetPackageName}
         VERSION ${targetPackageVersion}
         
         DOWNLOAD_OPTIONS
-            PACKAGE_TYPE URL
-            LINKS ${boostPackageURLS}
-            ${hashCheck}
+            ${downloadOptions}
+            
         BUILD_COMMANDS
             "COMMANDS ${bootstrap} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
-            "COMMANDS b2 stage link=static runtime-link=shared toolset=${toolset}-${toolsetVersion} address-model=${addressModel} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
-            "COMMANDS b2 install --prefix=PACKAGE_BINARY_DIR link=static runtime-link=shared address-model=${addressModel} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
+            "COMMANDS b2 stage ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} toolset=${toolset}-${toolsetVersion} address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
+            "COMMANDS b2 install ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} --prefix=PACKAGE_BINARY_DIR address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
 
         USE_BINARY_DIR_AS_PACKAGE_ROOT
 
