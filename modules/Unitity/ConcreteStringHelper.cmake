@@ -34,3 +34,94 @@ FUNCTION(CONCRETE_METHOD_STRING_POP_LAST VALUE POP_COUNT OUTPUT)
     ENDIF(${length} LESS 0)
 ENDFUNCTION(CONCRETE_METHOD_STRING_POP_LAST)
 
+FUNCTION(CONCRETE_METHOD_UUID UUID)
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "UPPER"
+        ""
+        ""
+        ${ARGN}
+    )
+
+    SET(namespace "6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+
+    STRING(RANDOM LENGTH 5 name)
+
+    IF(${_CONCRETE_UPPER})
+        SET(upper UPPER)
+    ENDIF()
+
+    STRING(UUID uuid NAMESPACE ${namespace} NAME ${name} TYPE MD5 ${upper})
+
+    SET(${UUID} ${uuid} PARENT_SCOPE)
+ENDFUNCTION(CONCRETE_METHOD_UUID)
+
+FUNCTION(CONCRETE_METHOD_SEPARATE_ARGUMENTS VALUE OUTPUT)
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        ""
+        "COMMAND_MODE"
+        ""
+        ${ARGN}
+    )
+
+    IF (_CONCRETE_COMMAND_MODE)
+        SET(commandModeStr ${_CONCRETE_COMMAND_MODE})
+        IF (${commandModeStr} STREQUAL "Windows")
+            SET(commandMode WINDOWS_COMMAND)
+        ELSEIF(${commandModeStr} STREQUAL "UNIX")
+            SET(commandMode UNIX_COMMAND)
+        ELSE()
+            MESSAGE(FATAL_MESSAGE "unknown command mode")
+        ENDIF()
+    ELSE()
+        SET(commandMode NATIVE_COMMAND)
+    ENDIF()
+
+    SEPARATE_ARGUMENTS(list ${commandMode} ${VALUE})
+
+    SET(index 0)
+    SET(listArguments)
+
+    SET(start FALSE)
+    FOREACH(var ${list})
+        IF (NOT ${start})
+            STRING(FIND ${var} "'" pos)
+
+            IF (${pos} EQUAL 0)
+                SET(start TRUE)
+
+                SET(stringCat)
+
+                STRING(SUBSTRING ${var} 1 -1 var)
+            ENDIF()
+        ENDIF()
+
+        IF (${start})
+            STRING(FIND ${var} "'" pos REVERSE)
+
+            STRING(LENGTH ${var} length)
+            MATH(EXPR length "${length} - 1")
+
+            IF (${pos} EQUAL ${length})
+                SET(start FLASE)                
+
+                STRING(SUBSTRING ${var} 0 ${length} var)
+
+                STRING(APPEND stringCat "${var}")
+
+                LIST(APPEND listArguments ${stringCat})
+
+                CONTINUE()
+            ENDIF()
+        ENDIF()
+
+        IF (${start})
+            STRING(APPEND stringCat "${var} ")
+        ELSE()
+            LIST(APPEND listArguments ${var})
+        ENDIF()
+    ENDFOREACH()
+
+    SET(${OUTPUT} ${listArguments} PARENT_SCOPE)
+ENDFUNCTION(CONCRETE_METHOD_SEPARATE_ARGUMENTS)
