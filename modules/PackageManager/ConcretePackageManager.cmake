@@ -261,7 +261,7 @@ FUNCTION(__executeProcess PACKAGE_NAME RESULT)
     STRING(REPLACE "PACKAGE_BINARY_DIR" "${${lcPackageName}_BINARY_DIR}" newArgs ${newArgs})
     STRING(REPLACE "PACKAGE_SUBBUILD_DIR" "${${lcPackageName}_SUBBUILD_DIR}" newArgs ${newArgs})
     
-    CONCRETE_METHOD_SEPARATE_ARGUMENTS(${newArgs} newArgs "'" " ")
+    CONCRETE_METHOD_SEPARATE_ARGUMENTS(${newArgs} newArgs COMMAND_MODE "Windows")
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -280,7 +280,7 @@ FUNCTION(__executeProcess PACKAGE_NAME RESULT)
     IF (_CONCRETE_COMMANDS)
         SET(command ${_CONCRETE_COMMANDS})
 
-        MESSAGE(STATUS "Build-Command : ${command}")
+        MESSAGE(STATUS ${command})
         
         EXECUTE_PROCESS(
             COMMAND ${command}
@@ -297,12 +297,15 @@ FUNCTION(__executeProcess PACKAGE_NAME RESULT)
 ENDFUNCTION(__executeProcess)
 
 FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
-    SET(options DOWNLOAD_ONLY)
+    SET(options 
+        DOWNLOAD_ONLY          
+        )
 
-    SET(singleValueKey VERSION)
+    SET(singleValueKey VERSION BUILD_TOOLSET)
 
     SET(mulitValueKey 
             DOWNLOAD_OPTIONS 
+            CMAKE_STANDARD_BUILD_OPTIONS
             BUILD_COMMANDS 
             CONFIGURE_COMMANDS
             CREATE_DIRECTORYS
@@ -315,6 +318,12 @@ FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
         "${mulitValueKey}"
         ${ARGN}
     )
+
+    IF (_CONCRETE_BUILD_TOOLSET)
+        SET(buildToolset ${_CONCRETE_BUILD_TOOLSET})
+    ELSE()
+        SET(buildToolset "None")
+    ENDIF()
 
     SET(packageName ${PACKAGE_NAME})
 
@@ -365,9 +374,19 @@ FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
             ENDIF(${_CONCRETE_DOWNLOAD_ONLY})
 
             IF (NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
+                IF (${buildToolset} STREQUAL "Customize")
+                    IF (_CONCRETE_BUILD_COMMANDS)
+                        SET(commandsList "${_CONCRETE_BUILD_COMMANDS}")
+                    ELSE()
+                        MESSAGE(WARNING "no build commands option found, may set BUILD_TOOLSET option None")
+                    ENDIF()
+                ElSEIF(${buildToolset} STREQUAL "CMake")
+                    __CMakeStandardBuildCommands(commandsList ${_CONCRETE_CMAKE_STANDARD_BUILD_OPTIONS})
+                ENDIF()
+
                 # Build Step
                 IF (_CONCRETE_CONFIGURE_COMMANDS)
-                    FOREACH(var ${_CONCRETE_BUILD_COMMANDS})
+                    FOREACH(var ${_CONCRETE_CONFIGURE_COMMANDS})
                         CONCRETE_METHOD_PROJECT_CONFIGURE_FILE(${var})
                     ENDFOREACH()                    
                 ENDIF(_CONCRETE_CONFIGURE_COMMANDS)
@@ -382,19 +401,17 @@ FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
                     ENDFOREACH()                    
                 ENDIF()
 
-                IF (_CONCRETE_BUILD_COMMANDS)
-                    FOREACH(var ${_CONCRETE_BUILD_COMMANDS})
-                        __executeProcess(${packageName} result ${var})
+                FOREACH(var ${commandsList})
+                    __executeProcess(${packageName} result ${var})
 
-                        IF (NOT ${result} STREQUAL "0")
-                            BREAK()
-                        ENDIF()
-                    ENDFOREACH()                    
-
-                    IF (${result} STREQUAL "0")
-                        SET_PROPERTY(CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE TRUE)    
+                    IF (NOT ${result} STREQUAL "0")
+                        BREAK()
                     ENDIF()
-                ENDIF(_CONCRETE_BUILD_COMMANDS)
+                ENDFOREACH()                    
+
+                IF (${result} STREQUAL "0")
+                    SET_PROPERTY(CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE TRUE)    
+                ENDIF()
             ENDIF(NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
         ENDIF(NOT ${lcPackageName}_POPULATED)
     ENDIF(_CONCRETE_DOWNLOAD_OPTIONS)
@@ -402,12 +419,12 @@ FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
 ENDFUNCTION(__DownloadAndBuildPackage)
 
 #TODO:: ADD Muilt Package
-FUNCTION(CONCRETE_METHOD_FIND_PACKAGE PACKAGE_NAME)
+FUNCTION(CONCRETE_METHOD_FETCH_PACKAGE PACKAGE_NAME)
     SET(options USE_BINARY_DIR_AS_PACKAGE_ROOT)
 
     SET(singleValueKey PACKAGE_ROOT)
 
-    SET(mulitValueKey FIND_PACKAGE_ARGUMENTS)
+    SET(mulitValueKey)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -417,7 +434,7 @@ FUNCTION(CONCRETE_METHOD_FIND_PACKAGE PACKAGE_NAME)
         ${ARGN}
     )
 
-    __DownloadAndBuildPackage(${PACKAGE_NAME} ${ARGN})
+    __DownloadAndBuildPackage(${PACKAGE_NAME} ${_CONCRETE_UNPARSED_ARGUMENTS})
 
     STRING(TOLOWER ${PACKAGE_NAME} lcPackageName)
 
@@ -433,8 +450,114 @@ FUNCTION(CONCRETE_METHOD_FIND_PACKAGE PACKAGE_NAME)
 
     LIST(APPEND CMAKE_PREFIX_PATH ${pakcageRoot})
 
-    FIND_PACKAGE(${PACKAGE_NAME} ${_CONCRETE_FIND_PACKAGE_ARGUMENTS})
-ENDFUNCTION(CONCRETE_METHOD_FIND_PACKAGE)
+    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
+
+    MESSAGE(STATUS ${CMAKE_PREFIX_PATH})
+
+ENDFUNCTION(CONCRETE_METHOD_FETCH_PACKAGE)
+
+FUNCTION(__CMakeStandardBuildCommands CommandsOutput)
+    SET(options)
+
+    SET(singleValueKey ROOT_DIR INSTALL_DIR
+        CMAKE_GENERATOR CMAKE_GENERATOR_PLATFORM CMAKE_GENERATOR_TOOLSET CMAKE_SYSTEM_VERSION)  
+
+    SET(mulitValueKey CMAKE_CONFIGURE_TYPES)
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueKey}"
+        "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    IF (_CONCRETE_ROOT_DIR)
+        SET(rootDir ${_CONCRETE_ROOT_DIR})
+    ELSE()
+        SET(rootDir "${${lcPackageName}_SOURCE_DIR}")
+    ENDIF()
+
+    IF (_CONCRETE_INSTALL_DIR)
+        SET(installDir ${_CONCRETE_INSTALL_DIR})
+    ELSE()
+        SET(installDir "${${lcPackageName}_BINARY_DIR}")
+    ENDIF()
+
+    SET(dirs ${rootDir} ${installDir})
+
+    FOREACH(var ${dirs})
+        STRING(REPLACE "PACKAGE_SOURCE_DIR" "${${lcPackageName}_SOURCE_DIR}" var ${var})
+        STRING(REPLACE "PACKAGE_BINARY_DIR" "${${lcPackageName}_BINARY_DIR}" var ${var})
+        STRING(REPLACE "PACKAGE_SUBBUILD_DIR" "${${lcPackageName}_SUBBUILD_DIR}" var ${var})        
+    ENDFOREACH()
+    
+    CONCRETE_METHOD_UUID(uuid)
+    
+    SET(buildDir "${rootDir}/build-${uuid}")            
+
+    CONCRETE_METHOD_CREATE_DIRECTORYS(DIRECTORYS ${buildDir} ABSOULT_PATH)
+
+    SET(generatorCommand "COMMANDS cmake ")
+
+    IF (_CONCRETE_CMAKE_GENERATOR)
+        STRING(APPEND generatorCommand "-G '${_CONCRETE_CMAKE_GENERATOR}' ")
+    ELSE()
+        STRING(APPEND generatorCommand "-G '${CMAKE_GENERATOR}' ")
+    ENDIF()
+
+    IF (_CONCRETE_CMAKE_GENERATOR_PLATFORM)
+        STRING(APPEND generatorCommand "-A '${_CONCRETE_CMAKE_GENERATOR_PLATFORM}' ")
+    ELSE()
+        STRING(APPEND generatorCommand "-A '${CMAKE_GENERATOR_PLATFORM}' ")
+    ENDIF()
+
+    IF (_CONCRETE_CMAKE_GENERATOR_TOOLSET)
+        STRING(APPEND generatorCommand "-DCMAKE_GENERATOR_TOOLSET=${_CONCRETE_CMAKE_GENERATOR_TOOLSET} ")
+    ELSE()
+        GET_PROPERTY(generatorToolsetDefined CACHE CMAKE_GENERATOR_TOOLSET PROPERTY VALUE SET)
+
+        IF (${generatorToolsetDefined})
+            IF (NOT ${CMAKE_GENERATOR_TOOLSET} STREQUAL "")
+                STRING(APPEND generatorCommand "-DCMAKE_GENERATOR_TOOLSET=${CMAKE_GENERATOR_TOOLSET} ")
+            ENDIF()
+        ENDIF()
+    ENDIF()
+
+    IF (_CONCRETE_CMAKE_SYSTEM_VERSION)
+        STRING(APPEND generatorCommand "-DCMAKE_SYSTEM_VERSION=${_CONCRETE_CMAKE_SYSTEM_VERSION} ")
+    ELSE()
+        GET_PROPERTY(systemVersionDefined CACHE CMAKE_SYSTEM_VERSION PROPERTY VALUE SET)
+
+        IF (${systemVersionDefined})
+            STRING(APPEND generatorCommand "-DCMAKE_SYSTEM_VERSION=${CMAKE_SYSTEM_VERSION} ")
+        ENDIF()
+    ENDIF()
+
+    STRING(APPEND generatorCommand "./.. WORKING_DIRECTORY ${buildDir}")
+
+    LIST(APPEND commands ${generatorCommand})
+
+    IF (_CONCRETE_CMAKE_CONFIGURE_TYPES)
+        SET(configureTypes ${_CONCRETE_CMAKE_CONFIGURE_TYPES})
+    ELSE()
+        SET(configureTypes Debug Release)
+    ENDIF()
+
+    FOREACH(var ${configureTypes})
+        SET(buildCommand "COMMANDS cmake --build . --config ${var} WORKING_DIRECTORY ${buildDir}")
+
+        LIST(APPEND commands ${buildCommand})
+    ENDFOREACH()    
+
+    FOREACH(var ${configureTypes})
+        SET(installCommand "COMMANDS cmake --install . --config ${var} --prefix ${installDir} WORKING_DIRECTORY ${buildDir}")
+
+        LIST(APPEND commands ${installCommand})
+    ENDFOREACH() 
+
+    SET(${CommandsOutput} ${commands} PARENT_SCOPE)
+ENDFUNCTION(__CMakeStandardBuildCommands)
 
 FUNCTION(CONCRETE_METHOD_SET_PACKAGE_MANAGER_PROPERTY)
     SET(singleValueProperty VERBOSE)
