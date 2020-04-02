@@ -418,44 +418,6 @@ FUNCTION(__DownloadAndBuildPackage PACKAGE_NAME)
 
 ENDFUNCTION(__DownloadAndBuildPackage)
 
-#TODO:: ADD Muilt Package
-FUNCTION(CONCRETE_METHOD_FETCH_PACKAGE PACKAGE_NAME)
-    SET(options USE_BINARY_DIR_AS_PACKAGE_ROOT)
-
-    SET(singleValueKey PACKAGE_ROOT)
-
-    SET(mulitValueKey)
-
-    CMAKE_PARSE_ARGUMENTS(
-        _CONCRETE
-        "${options}"
-        "${singleValueKey}"
-        "${mulitValueKey}"
-        ${ARGN}
-    )
-
-    __DownloadAndBuildPackage(${PACKAGE_NAME} ${_CONCRETE_UNPARSED_ARGUMENTS})
-
-    STRING(TOLOWER ${PACKAGE_NAME} lcPackageName)
-
-    IF(${_CONCRETE_USE_BINARY_DIR_AS_PACKAGE_ROOT})
-        SET(pakcageRoot ${${lcPackageName}_BINARY_DIR})
-    ElSE()
-        IF(_CONCRETE_PACKAGE_ROOT)
-            SET(pakcageRoot ${_CONCRETE_PACKAGE_ROOT})
-        ELSE()
-            SET(pakcageRoot ${${lcPackageName}_SOURCE_DIR})
-        ENDIF()
-    ENDIF()
-
-    LIST(APPEND CMAKE_PREFIX_PATH ${pakcageRoot})
-
-    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
-
-    MESSAGE(STATUS ${CMAKE_PREFIX_PATH})
-
-ENDFUNCTION(CONCRETE_METHOD_FETCH_PACKAGE)
-
 FUNCTION(__CMakeStandardBuildCommands CommandsOutput)
     SET(options)
 
@@ -579,3 +541,77 @@ FUNCTION(CONCRETE_METHOD_SET_PACKAGE_MANAGER_PROPERTY)
         ENDIF(${_CONCRETE_VERBOSE})
     ENDIF(_CONCRETE_VERBOSE)
 ENDFUNCTION(CONCRETE_METHOD_SET_PACKAGE_MANAGER_PROPERTY)
+
+FUNCTION(CONCRETE_METHOD_FETCH_PACKAGE PACKAGE_NAME)
+    SET(options USE_BINARY_DIR_AS_PACKAGE_ROOT)
+
+    SET(singleValueKey PACKAGE_ROOT)
+
+    SET(mulitValueKey)
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueKey}"
+        "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    __DownloadAndBuildPackage(${PACKAGE_NAME} ${_CONCRETE_UNPARSED_ARGUMENTS})
+
+    STRING(TOLOWER ${PACKAGE_NAME} lcPackageName)
+
+    IF(${_CONCRETE_USE_BINARY_DIR_AS_PACKAGE_ROOT})
+        SET(pakcageRoot ${${lcPackageName}_BINARY_DIR})
+    ElSE()
+        IF(_CONCRETE_PACKAGE_ROOT)
+            SET(pakcageRoot ${_CONCRETE_PACKAGE_ROOT})
+        ELSE()
+            SET(pakcageRoot ${${lcPackageName}_SOURCE_DIR})
+        ENDIF()
+    ENDIF()
+
+    LIST(APPEND CMAKE_PREFIX_PATH ${pakcageRoot})
+
+    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
+ENDFUNCTION(CONCRETE_METHOD_FETCH_PACKAGE)
+
+FUNCTION(CONCRETE_METHOD_FIND_PACKAGE PACKAGE_NAME)
+    SET(options)
+
+    SET(singleValueKey)
+
+    SET(mulitValueKey PACKAGES FIND_PACKAGE_ARGUMENTS)
+
+    CMAKE_PARSE_ARGUMENTS(
+        _ "${options}" "${singleValueKey}" "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    IF (_PACKAGES)
+        FOREACH(var ${_PACKAGES})
+            STRING(UPPER ${var} ucPackage)
+            SET(mulitValueKey ${mulitValueKey} ${ucPackage}_FIND_PACKAGE_ARGUMENTS)
+        ENDFOREACH()
+    ENDIF()
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE "${options}" "${singleValueKey}" "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    CONCRETE_METHOD_FETCH_PACKAGE(${PACKAGE_NAME} ${_CONCRETE_UNPARSED_ARGUMENTS})
+
+    IF (_CONCRETE_PACKAGES)
+        FOREACH(var ${_CONCRETE_PACKAGES})
+            STRING(UPPER ${var} ucPackage)
+            FIND_PACKAGE(${var} ${_CONCRETE_${ucPackage}_FIND_PACKAGE_ARGUMENTS})
+
+            SET(${var}_FOUND ${${var}_FOUND} PARENT_SCOPE)
+        ENDFOREACH()
+    ELSE()
+        FIND_PACKAGE(${PACKAGE_NAME} ${_CONCRETE_FIND_PACKAGE_ARGUMENTS})
+
+        SET(${PACKAGE_NAME}_FOUND ${${PACKAGE_NAME}_FOUND} PARENT_SCOPE)
+    ENDIF()
+ENDFUNCTION(CONCRETE_METHOD_FIND_PACKAGE)
