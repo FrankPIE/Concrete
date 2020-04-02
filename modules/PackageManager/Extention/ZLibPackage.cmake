@@ -21,57 +21,55 @@
 
 INCLUDE_GUARD(GLOBAL)
 
-FUNCTION(CONCRETE_METHOD_FIND_GOOGLE_TEST_PACKAGE)
+FUNCTION(CONCRETE_METHOD_FIND_ZLIB_PACKAGE)
     SET(options)
 
     SET(singleValueKey
         VERSION
         )
 
-    SET(mulitValueKey GTEST_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
+    SET(mulitValueKey ZLIB_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
 
     CMAKE_PARSE_ARGUMENTS(
-        _CONCRETE_GTEST
+        _CONCRETE_ZLIB
         "${options}"
         "${singleValueKey}"
         "${mulitValueKey}"
         ${ARGN}
     )
 
-    IF(_CONCRETE_GTEST_VERSION)
-        SET(targetPackageVersion ${_CONCRETE_GTEST_VERSION})
-    ELSE()
-        SET(targetPackageVersion "1.10.0")
+    IF (_CONCRETE_ZLIB_CONFIGURE_TYPE)
+        SET(buildOptions CMAKE_STANDARD_BUILD_OPTIONS)
+        SET(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_ZLIB_CONFIGURE_TYPE})
     ENDIF()
 
-    IF (_CONCRETE_GTEST_CONFIGURE_TYPE)
-        SET(buildOptions CMAKE_STANDARD_BUILD_OPTIONS)
-        SET(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_GTEST_CONFIGURE_TYPE})
+    IF(_CONCRETE_ZLIB_VERSION)
+        SET(targetPackageVersion ${_CONCRETE_ZLIB_VERSION})
+    ELSE()
+        SET(targetPackageVersion "1.2.11")
     ENDIF()
 
     SET(cmakeBuildOptions ${buildOptions} ${configureType})
 
     CONCRETE_METHOD_FIND_PACKAGE(
-        googletest
+        zip
 
         VERSION ${targetPackageVersion}
 
-        PACKAGES GTest
+        PACKAGES "ZLib"
 
         FETCH_PACKAGE_ARGUMENTS
             DOWNLOAD_BUILD_STEP_OPTIONS
                 BUILD_TOOLSET "CMake"
-        
+
                 ${cmakeBuildOptions}
 
                 DOWNLOAD_OPTIONS
                     PACKAGE_TYPE GIT
-                    REPOSITORY https://github.com/google/googletest.git
-                    COMMIT_TAG "release-${targetPackageVersion}"
-            
-        GTEST_FIND_PACKAGE_ARGUMENTS
-            ${_CONCRETE_GTEST_GTEST_FIND_PACKAGE_ARGUMENTS}
-    )
+                    REPOSITORY https://github.com/madler/zlib.git
+                    COMMIT_TAG "v${targetPackageVersion}"
 
-    SET(GTest_FOUND ${GTest_FOUND} PARENT_SCOPE)
-ENDFUNCTION(CONCRETE_METHOD_FIND_GOOGLE_TEST_PACKAGE)
+        ZLIB_FIND_PACKAGE_ARGUMENTS
+            ${_CONCRETE_ZLIB_ZLIB_FIND_PACKAGE_ARGUMENTS}
+    )
+ENDFUNCTION(CONCRETE_METHOD_FIND_ZLIB_PACKAGE)

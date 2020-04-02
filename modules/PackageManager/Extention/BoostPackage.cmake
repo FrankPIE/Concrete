@@ -209,18 +209,20 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
 
     CONCRETE_METHOD_FIND_PACKAGE(
         ${targetPackageName}
-        VERSION ${targetPackageVersion}
-        BUILD_TOOLSET "Customize"
-        
-        DOWNLOAD_OPTIONS
-            ${downloadOptions}
-            
-        BUILD_COMMANDS
-            "COMMANDS ${bootstrap} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
-            "COMMANDS b2 stage ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} toolset=${toolset}-${toolsetVersion} address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
-            "COMMANDS b2 install ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} --prefix=PACKAGE_BINARY_DIR address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
 
-        USE_BINARY_DIR_AS_PACKAGE_ROOT
+        VERSION ${targetPackageVersion}
+        
+        FETCH_PACKAGE_ARGUMENTS
+            DOWNLOAD_BUILD_STEP_OPTIONS
+                BUILD_TOOLSET "Customize"
+
+                DOWNLOAD_OPTIONS
+                    ${downloadOptions}
+                    
+                BUILD_COMMANDS
+                    "COMMANDS ${bootstrap} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
+                    "COMMANDS b2 stage ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} toolset=${toolset}-${toolsetVersion} address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
+                    "COMMANDS b2 install ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} --prefix=PACKAGE_BINARY_DIR address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
 
         FIND_PACKAGE_ARGUMENTS
             ${_CONCRETE_BOOST_FIND_PACKAGE_ARGUMENTS}
