@@ -19,68 +19,68 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-MACRO(__BoostHashTable)
-    SET(Boost_1_72_0_HASH_SHA256 "c66e88d5786f2ca4dbebb14e06b566fb642a1a6947ad8cc9091f9f445134143f")        
-    SET(Boost_1_71_0_HASH_SHA256 "96b34f7468f26a141f6020efb813f1a2f3dfb9797ecf76a7d7cbd843cc95f5bd")        
-    SET(Boost_1_70_0_HASH_SHA256 "882b48708d211a5f48e60b0124cf5863c1534cd544ecd0664bb534a4b5d506e9")        
-    SET(Boost_1_69_0_HASH_SHA256 "9a2c2819310839ea373f42d69e733c339b4e9a19deab6bfec448281554aa4dbb")        
-    SET(Boost_1_68_0_HASH_SHA256 "da3411ea45622579d419bfda66f45cd0f8c32a181d84adfa936f5688388995cf")        
-ENDMACRO(__BoostHashTable)
+macro(__concrete_boost_hash_table)
+    set(Boost_1_72_0_HASH_SHA256 "c66e88d5786f2ca4dbebb14e06b566fb642a1a6947ad8cc9091f9f445134143f")        
+    set(Boost_1_71_0_HASH_SHA256 "96b34f7468f26a141f6020efb813f1a2f3dfb9797ecf76a7d7cbd843cc95f5bd")        
+    set(Boost_1_70_0_HASH_SHA256 "882b48708d211a5f48e60b0124cf5863c1534cd544ecd0664bb534a4b5d506e9")        
+    set(Boost_1_69_0_HASH_SHA256 "9a2c2819310839ea373f42d69e733c339b4e9a19deab6bfec448281554aa4dbb")        
+    set(Boost_1_68_0_HASH_SHA256 "da3411ea45622579d419bfda66f45cd0f8c32a181d84adfa936f5688388995cf")        
+endmacro(__concrete_boost_hash_table)
 
-FUNCTION(__BoostGetToolset TOOLSET TOOLSET_VERSION)
-    IF(MSVC)
-        SET(${TOOLSET} msvc PARENT_SCOPE)
+function(__concrete_boost_get_toolset TOOLSET TOOLSET_VERSION)
+    if(MSVC)
+        set(${TOOLSET} msvc PARENT_SCOPE)
 
-        GET_PROPERTY(toolsetDefined CACHE CMAKE_GENERATOR_TOOLSET PROPERTY VALUE DEFINED)
+        get_property(toolsetDefined CACHE CMAKE_GENERATOR_TOOLSET PROPERTY VALUE DEFINED)
         
-        IF (${toolsetDefined})            
-            GET_PROPERTY(toolset CACHE CMAKE_GENERATOR_TOOLSET PROPERTY VALUE)
+        if (${toolsetDefined})            
+            get_property(toolset CACHE CMAKE_GENERATOR_TOOLSET PROPERTY VALUE)
 
-            IF (${toolset} STREQUAL "v100")     # VS2010
-                SET(${TOOLSET_VERSION} "10.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "v110")  # VS2012
-                SET(${TOOLSET_VERSION} "11.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "v120")  # VS2013
-                SET(${TOOLSET_VERSION} "12.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "v140")  # VS2015
-                SET(${TOOLSET_VERSION} "14.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "v141")  # VS2017
-                SET(${TOOLSET_VERSION} "14.1" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "v142")  # VS2019
-                SET(${TOOLSET_VERSION} "14.2" PARENT_SCOPE)
-            ELSE()
-                MESSAGE(FATAL_ERROR "unknown msvc toolset version")
-            ENDIF()
-        ELSE()
-            GET_PROPERTY(toolset CACHE CMAKE_GENERATOR PROPERTY VALUE)
+            if (${toolset} STREQUAL "v100")     # VS2010
+                set(${TOOLSET_VERSION} "10.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "v110")  # VS2012
+                set(${TOOLSET_VERSION} "11.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "v120")  # VS2013
+                set(${TOOLSET_VERSION} "12.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "v140")  # VS2015
+                set(${TOOLSET_VERSION} "14.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "v141")  # VS2017
+                set(${TOOLSET_VERSION} "14.1" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "v142")  # VS2019
+                set(${TOOLSET_VERSION} "14.2" PARENT_SCOPE)
+            else()
+                message(FATAL_ERROR "unknown msvc toolset version")
+            endif()
+        else()
+            get_property(toolset CACHE CMAKE_GENERATOR PROPERTY VALUE)
 
-            IF (${toolset} STREQUAL "Visual Studio 9 2008")     # VS2008
-                SET(${TOOLSET_VERSION} "9.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "Visual Studio 10 2010")  # VS2010
-                SET(${TOOLSET_VERSION} "10.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "Visual Studio 11 2012")  # VS2012
-                SET(${TOOLSET_VERSION} "11.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "Visual Studio 12 2013")  # VS2013
-                SET(${TOOLSET_VERSION} "12.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "Visual Studio 14 2015")  # VS2015
-                SET(${TOOLSET_VERSION} "14.0" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "Visual Studio 15 2017")  # VS2017
-                SET(${TOOLSET_VERSION} "14.1" PARENT_SCOPE)
-            ELSEIF(${toolset} STREQUAL "Visual Studio 16 2019")  # VS2019
-                SET(${TOOLSET_VERSION} "14.2" PARENT_SCOPE)
-            ELSE()
-                MESSAGE(FATAL_ERROR "unknown msvc toolset version")
-            ENDIF()    
-        ENDIF()
-    ENDIF(MSVC)    
-ENDFUNCTION(__BoostGetToolset)
+            if (${toolset} STREQUAL "Visual Studio 9 2008")     # VS2008
+                set(${TOOLSET_VERSION} "9.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "Visual Studio 10 2010")  # VS2010
+                set(${TOOLSET_VERSION} "10.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "Visual Studio 11 2012")  # VS2012
+                set(${TOOLSET_VERSION} "11.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "Visual Studio 12 2013")  # VS2013
+                set(${TOOLSET_VERSION} "12.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "Visual Studio 14 2015")  # VS2015
+                set(${TOOLSET_VERSION} "14.0" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "Visual Studio 15 2017")  # VS2017
+                set(${TOOLSET_VERSION} "14.1" PARENT_SCOPE)
+            elseif(${toolset} STREQUAL "Visual Studio 16 2019")  # VS2019
+                set(${TOOLSET_VERSION} "14.2" PARENT_SCOPE)
+            else()
+                message(FATAL_ERROR "unknown msvc toolset version")
+            endif()    
+        endif()
+    endif(MSVC)    
+endfunction(__concrete_boost_get_toolset)
 
-FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
-    SET(options STATIC SHARED SINGLE_THREADING MULTI_THREADING RUNTIME_LINK_STATIC)
+function(concrete_package_boost)
+    set(options STATIC SHARED SINGLE_THREADING MULTI_THREADING RUNTIME_LINK_STATIC)
 
-    SET(singleValueKey
+    set(singleValueKey
         TARGET_NAME 
         VERSION
         TOOLSET
@@ -88,7 +88,7 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
         DOWNLOAD_METHOD
         )
 
-    SET(mulitValueKey WITH_BUILD WITHOUT_BUILD FIND_PACKAGE_ARGUMENTS)
+    set(mulitValueKey WITH_BUILD WITHOUT_BUILD FIND_PACKAGE_ARGUMENTS)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE_BOOST
@@ -98,116 +98,116 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
         ${ARGN}
     )
 
-    __BoostHashTable()
+    __concrete_boost_hash_table()
 
-    IF(_CONCRETE_BOOST_TARGET_NAME)
-        SET(targetPackageName ${_CONCRETE_BOOST_TARGET_NAME})
-    ELSE()
-        SET(targetPackageName Boost)
-    ENDIF(_CONCRETE_BOOST_TARGET_NAME)
+    if(_CONCRETE_BOOST_TARGET_NAME)
+        set(targetPackageName ${_CONCRETE_BOOST_TARGET_NAME})
+    else()
+        set(targetPackageName Boost)
+    endif(_CONCRETE_BOOST_TARGET_NAME)
 
-    IF(_CONCRETE_BOOST_VERSION)
-        SET(targetPackageVersion ${_CONCRETE_BOOST_VERSION})
-    ELSE()
-        SET(targetPackageVersion "1.72.0")
-    ENDIF(_CONCRETE_BOOST_VERSION)
+    if(_CONCRETE_BOOST_VERSION)
+        set(targetPackageVersion ${_CONCRETE_BOOST_VERSION})
+    else()
+        set(targetPackageVersion "1.72.0")
+    endif(_CONCRETE_BOOST_VERSION)
 
-    SET(linkOptions)
+    set(linkOptions)
 
-    IF (_CONCRETE_BOOST_STATIC)        
-        STRING(APPEND linkOptions "link=static ")
-    ENDIF()
+    if (_CONCRETE_BOOST_STATIC)        
+        string(APPEND linkOptions "link=static ")
+    endif()
 
-    IF (_CONCRETE_BOOST_SHARED)        
-        STRING(APPEND linkOptions "link=shared")
-    ENDIF()
+    if (_CONCRETE_BOOST_SHARED)        
+        string(APPEND linkOptions "link=shared")
+    endif()
 
-    SET(threadingOptions)
+    set(threadingOptions)
 
-    IF (_CONCRETE_BOOST_SINGLE_THREADING)
-        STRING(APPEND threadingOptions "threading=single ")
-    ENDIF()
+    if (_CONCRETE_BOOST_SINGLE_THREADING)
+        string(APPEND threadingOptions "threading=single ")
+    endif()
 
-    IF (_CONCRETE_BOOST_MULTI_THREADING)
-        STRING(APPEND threadingOptions "threading=multi ")
-    ENDIF()
+    if (_CONCRETE_BOOST_MULTI_THREADING)
+        string(APPEND threadingOptions "threading=multi ")
+    endif()
 
-    SET(withBuild)
-    IF(_CONCRETE_BOOST_WITH_BUILD)
-        FOREACH(var ${_CONCRETE_BOOST_WITH_BUILD})
-            STRING(APPEND withBuild "--without-${var}")
-        ENDFOREACH()
-    ENDIF()
+    set(withBuild)
+    if(_CONCRETE_BOOST_WITH_BUILD)
+        foreach(var ${_CONCRETE_BOOST_WITH_BUILD})
+            string(APPEND withBuild "--without-${var}")
+        endforeach()
+    endif()
 
-    SET(withoutBuild)
-    IF(_CONCRETE_BOOST_WITHOUT_BUILD)
-        FOREACH(var ${_CONCRETE_BOOST_WITHOUT_BUILD})
-            STRING(APPEND withoutBuild "--without-${var}")
-        ENDFOREACH()
-    ENDIF()
+    set(withoutBuild)
+    if(_CONCRETE_BOOST_WITHOUT_BUILD)
+        foreach(var ${_CONCRETE_BOOST_WITHOUT_BUILD})
+            string(APPEND withoutBuild "--without-${var}")
+        endforeach()
+    endif()
 
-    SET(runtimeLinkOptions)
+    set(runtimeLinkOptions)
 
-    IF(_CONCRETE_BOOST_RUNTIME_LINK_STATIC)
-        STRING(APPEND runtimeLinkOptions "runtime-link=static ")
-    ENDIF()
+    if(_CONCRETE_BOOST_RUNTIME_LINK_STATIC)
+        string(APPEND runtimeLinkOptions "runtime-link=static ")
+    endif()
 
-    STRING(REPLACE "." "_" boostPackageName ${targetPackageVersion})
+    string(REPLACE "." "_" boostPackageName ${targetPackageVersion})
 
-    SET(boostPackageURLS 
+    set(boostPackageURLS 
         "https://dl.bintray.com/boostorg/release/${targetPackageVersion}/source/boost_${boostPackageName}.tar.gz"
         "https://github.com/boostorg/boost/archive/boost-${targetPackageVersion}.tar.gz"
         "https://sourceforge.net/projects/boost/files/boost/${targetPackageVersion}/boost_${boostPackageName}.tar.gz"
         "http://mirror.nienbo.com/boost/${targetPackageVersion}/boost_${boostPackageName}.tar.gz"
     )
 
-    IF (DEFINED Boost_${boostPackageName}_HASH_SHA256)
-        SET(hashCheck URL_HASH SHA256=${Boost_${boostPackageName}_HASH_SHA256})
-    ENDIF()
+    if (DEFINED Boost_${boostPackageName}_HASH_SHA256)
+        set(hashCheck URL_HASH SHA256=${Boost_${boostPackageName}_HASH_SHA256})
+    endif()
 
-    IF (MSVC)
-        SET(bootstrap bootstrap.bat)
-    ELSE()
-        SET(bootstrap bootstrap.sh)
-    ENDIF(MSVC)
+    if (MSVC)
+        set(bootstrap bootstrap.bat)
+    else()
+        set(bootstrap bootstrap.sh)
+    endif(MSVC)
 
-    __BoostGetToolset(toolset toolsetVersion)
+    __concrete_boost_get_toolset(toolset toolsetVersion)
 
-    IF (_CONCRETE_BOOST_TOOLSET)
-        SET(toolset ${_CONCRETE_TOOLSET})
-    ENDIF()
+    if (_CONCRETE_BOOST_TOOLSET)
+        set(toolset ${_CONCRETE_TOOLSET})
+    endif()
 
-    IF (_CONCRETE_BOOST_TOOLSET_VERSION)
-        SET(toolsetVersion ${_CONCRETE_TOOLSET_VERSION})
-    ENDIF()
+    if (_CONCRETE_BOOST_TOOLSET_VERSION)
+        set(toolsetVersion ${_CONCRETE_TOOLSET_VERSION})
+    endif()
 
-    IF (${CONCRETE_PROJECT_COMPILER_TARGET} STREQUAL "x86")
-        SET(addressModel "32")
-    ELSEIF(${CONCRETE_PROJECT_COMPILER_TARGET} STREQUAL "x64")
-        SET(addressModel "64")
-    ENDIF()
+    if (${CONCRETE_PROJECT_COMPILER_TARGET} STREQUAL "x86")
+        set(addressModel "32")
+    elseif(${CONCRETE_PROJECT_COMPILER_TARGET} STREQUAL "x64")
+        set(addressModel "64")
+    endif()
 
-    SET(downloadOptions)
+    set(downloadOptions)
 
-    IF(_CONCRETE_BOOST_DOWNLOAD_METHOD)
-        IF(${_CONCRETE_BOOST_DOWNLOAD_METHOD} STREQUAL "URL")
-            SET(downloadMethod "URL")
-        ELSEIF(${_CONCRETE_BOOST_DOWNLOAD_METHOD} STREQUAL "GIT")
-            SET(downloadMethod "GIT")
-        ENDIF()
-    ELSE()
-        SET(downloadMethod "URL")
-    ENDIF()
+    if(_CONCRETE_BOOST_DOWNLOAD_METHOD)
+        if(${_CONCRETE_BOOST_DOWNLOAD_METHOD} STREQUAL "url")
+            set(downloadMethod "url")
+        elseif(${_CONCRETE_BOOST_DOWNLOAD_METHOD} STREQUAL "git")
+            set(downloadMethod "git")
+        endif()
+    else()
+        set(downloadMethod "url")
+    endif()
 
-    IF(${downloadMethod} STREQUAL "URL")
-        SET(downloadOptions PACKAGE_TYPE URL LINKS ${boostPackageURLS} ${hashCheck})
-    ELSEIF(${downloadMethod} STREQUAL "GIT")
-        SET(downloadOptions PACKAGE_TYPE GIT REPOSITORY https://github.com/boostorg/boost.git COMMIT_TAG boost-${targetPackageVersion} GIT_SUBMODULES_RECURSE ON)
-    ELSE()
-        MESSAGE(FATAL_ERROR "unsupport method")
-    ENDIF()
+    if(${downloadMethod} STREQUAL "url")
+        set(downloadOptions PACKAGE_TYPE url LINKS ${boostPackageURLS} ${hashCheck})
+    elseif(${downloadMethod} STREQUAL "git")
+        set(downloadOptions PACKAGE_TYPE git REPOSITORY https://github.com/boostorg/boost.git COMMIT_TAG boost-${targetPackageVersion} GIT_SUBMODULES_RECURSE ON)
+    else()
+        message(FATAL_ERROR "unsupport method")
+    endif()
 
-    CONCRETE_METHOD_FIND_PACKAGE(
+    concrete_package(
         boost
 
         PACKAGES ${targetPackageName}
@@ -226,11 +226,10 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
                     "COMMANDS b2 stage ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} toolset=${toolset}-${toolsetVersion} address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
                     "COMMANDS b2 install ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} --prefix=PACKAGE_BINARY_DIR address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
 
-        BOOST_FIND_PACKAGE_ARGUMENTS
+        ${targetPackageName}_FIND_PACKAGE_ARGUMENTS
             ${_CONCRETE_BOOST_FIND_PACKAGE_ARGUMENTS}
     )
 
-    SET(Boost_FOUND ${Boost_FOUND} PARENT_SCOPE)
-
-ENDFUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
+    set(Boost_FOUND ${Boost_FOUND} PARENT_SCOPE)
+endfunction(concrete_package_boost)
 

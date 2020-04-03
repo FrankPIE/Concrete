@@ -19,40 +19,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-INCLUDE(CheckLanguage)
+include(CheckLanguage)
 
-FUNCTION(CONCRETE_INTERNAL_METHOD_CHECK_LANGUAGE_SUPPORTED LANG OUTPUT)
-    SET(languageSet
+function(concrete_check_language_supported LANG OUTPUT)
+    set(languageSet
         C CXX CUDA OBJC OBJCXX Fortran ASM ASM_MASM ASM_NASM ASM_ATT 
     )
 
-    LIST(FIND languageSet ${LANG} output)
+    list(FIND languageSet ${LANG} output)
 
-    IF (${output} EQUAL -1)
-        SET(${OUTPUT} 0 PARENT_SCOPE)
-    ELSE()
-        SET(${OUTPUT} 1 PARENT_SCOPE)        
-    ENDIF(${output} EQUAL -1)        
-ENDFUNCTION(CONCRETE_INTERNAL_METHOD_CHECK_LANGUAGE_SUPPORTED)
+    if (${output} EQUAL -1)
+        set(${OUTPUT} 0 PARENT_SCOPE)
+    else()
+        set(${OUTPUT} 1 PARENT_SCOPE)        
+    endif(${output} EQUAL -1)        
+endfunction(concrete_check_language_supported)
 
-FUNCTION(CONCRETE_INTERNAL_METHOD_CHECK_LANGUAGE LANG OUTPUT)
+function(concrete_check_language LANG OUTPUT)
     CHECK_LANGUAGE(${LANG})
 
-    IF(CMAKE_${LANG}_COMPILER)
-        SET(${OUTPUT} 1 PARENT_SCOPE)
-    ELSE()
-        SET(${OUTPUT} 0 PARENT_SCOPE)
-    ENDIF(CMAKE_${LANG}_COMPILER)
-ENDFUNCTION(CONCRETE_INTERNAL_METHOD_CHECK_LANGUAGE)
+    if(CMAKE_${LANG}_COMPILER)
+        set(${OUTPUT} 1 PARENT_SCOPE)
+    else()
+        set(${OUTPUT} 0 PARENT_SCOPE)
+    endif(CMAKE_${LANG}_COMPILER)
+endfunction(concrete_check_language)
 
-FUNCTION(CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE LANG)
-    CONCRETE_INTERNAL_METHOD_CHECK_LANGUAGE(${LANG} found)
+function(concrete_enable_language LANG)
+    concrete_check_language(${LANG} found)
 
-    IF (${found} EQUAL 1)
-        ENABLE_LANGUAGE(${LANG})
-    ELSE()
-        MESSAGE(SEND_ERROR "${LANG} language compiler is not found")
-    ENDIF(${found} EQUAL 1)
-ENDFUNCTION(CONCRETE_INTERNAL_METHOD_ENABLE_LANGUAGE)
+    if (${found} EQUAL 1)
+        enable_language(${LANG})
+    else()
+        message(SEND_ERROR "${LANG} language compiler is not found")
+    endif(${found} EQUAL 1)
+endfunction(concrete_enable_language)

@@ -19,93 +19,63 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-INCLUDE( CMakeParseArguments )
+include( CMakeParseArguments )
 
-INCLUDE( Project/Internal/ConcreteProcessProperty )
-INCLUDE( Project/Internal/ConcreteCheckLanguage )
+include( Project/Internal/ConcreteProcessProperty )
+include( Project/Internal/ConcreteCheckLanguage )
 
-FUNCTION(CONCRETE_INTERNAL_METHOD_CLEAR_CACHE)
+function(__concrete_clear_cache)
         # workaround for fix cache value
-        LIST(GET CONCRETE_PROJECT_DEFAULT_PARAMETER 0 tempName)
+        list(GET CONCRETE_PROJECT_DEFAULT_PARAMETER 0 tempName)
         UNSET(${tempName}_BINARY_DIR CACHE)
         UNSET(${tempName}_SOURCE_DIR CACHE)
         
-        IF (CMAKE_CONFIGURATION_TYPES)
-            SET(buildTypes ${CMAKE_CONFIGURATION_TYPES})
-        ELSE()
-            SET(buildTypes ${CMAKE_BUILD_TYPE})
-        ENDIF(CMAKE_CONFIGURATION_TYPES)
+        if (CMAKE_CONFIGURATION_TYPES)
+            set(buildTypes ${CMAKE_CONFIGURATION_TYPES})
+        else()
+            set(buildTypes ${CMAKE_BUILD_TYPE})
+        endif(CMAKE_CONFIGURATION_TYPES)
 
-        FOREACH(var ${buildTypes})
-            STRING(TOUPPER "${var}" upperValue)
+        foreach(var ${buildTypes})
+            string(TOUPPER "${var}" upperValue)
 
             UNSET(CMAKE_NONE_FLAGS_${upperValue} CACHE)            
-        ENDFOREACH(var ${buildTypes})
+        endforeach(var ${buildTypes})
 
-        STRING(REPLACE "${tempName}" ${CONCRETE_PROJECT_NAME} value "${CMAKE_INSTALL_PREFIX}")
-        SET_PROPERTY(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE ${value})    
-ENDFUNCTION(CONCRETE_INTERNAL_METHOD_CLEAR_CACHE)
+        string(REPLACE "${tempName}" ${CONCRETE_PROJECT_NAME} value "${CMAKE_INSTALL_PREFIX}")
+        set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE ${value})    
+endfunction(__concrete_clear_cache)
 
-FUNCTION(CONCRETE_INTERNAL_METHOD_CHECK_COMPILER_TARGET)
+function(concrete_check_compiler_target)
     # begin set compiler target
     # set platform compiler target x86 or x64 or arm(not supported yet)    
-    IF (CMAKE_CL_64)
-        SET_PROPERTY(CACHE CONCRETE_PROJECT_COMPILER_TARGET PROPERTY VALUE x64)
-    ELSE()
-        SET_PROPERTY(CACHE CONCRETE_PROJECT_COMPILER_TARGET PROPERTY VALUE x86)
-    ENDIF(CMAKE_CL_64)
+    if (CMAKE_CL_64)
+        set_property(CACHE CONCRETE_PROJECT_COMPILER_TARGET PROPERTY VALUE x64)
+    else()
+        set_property(CACHE CONCRETE_PROJECT_COMPILER_TARGET PROPERTY VALUE x86)
+    endif(CMAKE_CL_64)
     # end set compiler target
-ENDFUNCTION(CONCRETE_INTERNAL_METHOD_CHECK_COMPILER_TARGET)
+endfunction(concrete_check_compiler_target)
 
-MACRO(CONCRETE_INTERNAL_METHOD_EXPORT_SCOPE_VARIABLES)
-    IF (MSVC)
-        SET(MSVC ${MSVC} PARENT_SCOPE)
-        SET(MSVC_VERSION ${MSVC_VERSION} PARENT_SCOPE)
-    ENDIF(MSVC)
-
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY}  PARENT_SCOPE)        
-    SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY} PARENT_SCOPE)
-    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY} PARENT_SCOPE)
-
-    SET(CMAKE_C_COMPILER_LOADED ${CMAKE_C_COMPILER_LOADED} PARENT_SCOPE)
-    SET(CMAKE_CXX_COMPILER_LOADED ${CMAKE_CXX_COMPILER_LOADED} PARENT_SCOPE)
-    SET(CMAKE_CUDA_COMPILER_LOADED ${CMAKE_CUDA_COMPILER_LOADED} PARENT_SCOPE)
-    SET(CMAKE_OBJC_COMPILER_LOADED ${CMAKE_OBJC_COMPILER_LOADED} PARENT_SCOPE)
-    SET(CMAKE_FORTRAN_COMPILER_LOADED ${CMAKE_FORTRAN_COMPILER_LOADED} PARENT_SCOPE)
-    SET(CMAKE_OBJCXX_COMPILER_LOADED ${CMAKE_OBJCXX_COMPILER_LOADED} PARENT_SCOPE)
-    SET(CMAKE_ASM_COMPILER_LOADED ${CMAKE_ASM_COMPILER_LOADED} PARENT_SCOPE)
-    SET(CMAKE_ASM_MASM_COMPILER_LOADED ${CMAKE_ASM_MASM_COMPILER_LOADED} PARENT_SCOPE)
-
-    SET(CMAKE_C_COMPILER_VERSION ${CMAKE_C_COMPILER_VERSION} PARENT_SCOPE)
-    SET(CMAKE_CXX_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION} PARENT_SCOPE)
-    SET(CMAKE_CUDA_COMPILER_VERSION ${CMAKE_CUDA_COMPILER_VERSION} PARENT_SCOPE)
-    SET(CMAKE_OBJC_COMPILER_VERSION ${CMAKE_OBJC_COMPILER_VERSION} PARENT_SCOPE)
-    SET(CMAKE_FORTRAN_COMPILER_VERSION ${CMAKE_FORTRAN_COMPILER_VERSION} PARENT_SCOPE)
-    SET(CMAKE_OBJCXX_COMPILER_VERSION ${CMAKE_OBJCXX_COMPILER_VERSION} PARENT_SCOPE)
-    SET(CMAKE_ASM_COMPILER_VERSION ${CMAKE_ASM_COMPILER_VERSION} PARENT_SCOPE)
-    SET(CMAKE_ASM_MASM_COMPILER_VERSION ${CMAKE_ASM_MASM_COMPILER_VERSION} PARENT_SCOPE)
-ENDMACRO(CONCRETE_INTERNAL_METHOD_EXPORT_SCOPE_VARIABLES)
-
-FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE)     
-    SET(options 
-        PROJECT_COMPILER_TARGET_SUBDIRECTORY 
-        PROJECT_LANGUAGE_C PROJECT_LANGUAGE_CXX PROJECT_LANGUAGE_CUDA PROJECT_LANGUAGE_OBJC
-        PROJECT_LANGUAGE_OBJCXX PROJECT_LANGUAGE_FORTRAN PROJECT_LANGUAGE_ASM
+# https://bitbucket.org/ignitionrobotics/ign-cmake/issues/7/the-top-level-cmakeliststxt-file-for-a
+macro(concrete_project)         
+    set(options 
+        WITH_COMPILER_TARGET_SUBDIR 
     )
 
-    SET(singleValueKey 
-        PROJECT_NAME PROJECT_DESCRIPTION PROJECT_HOMEPAGE_URL 
-        PROJECT_ROOT_DIR PROJECT_BINARY_OUTPUT_DIR PROJECT_LIBRARY_OUTPUT_DIR
+    set(singleValueKey 
+        NAME DESCRIPTION HOMEPAGE_URL 
+        ROOT_DIR BINARY_OUTPUT_DIR LIBRARY_OUTPUT_DIR
     )
     
-    SET(mulitValueKey 
-        PROJECT_VERSION PROJECT_CONFIGURATION_TYPES PROJECT_LANGUAGES
+    set(mulitValueKey 
+        VERSION CONFIGURATION_TYPES LANGUAGES
     )
 
     CMAKE_PARSE_ARGUMENTS(
-        _CONCRETE
+        _CONCRETE_PROJECT
         "${options}"
         "${singleValueKey}"
         "${mulitValueKey}"
@@ -113,164 +83,168 @@ FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE)
     )
 
     # begin set project
-    IF(_CONCRETE_PROJECT_NAME)
-        SET_PROPERTY(CACHE CONCRETE_PROJECT_NAME PROPERTY VALUE ${_CONCRETE_PROJECT_NAME})
-    ELSE()
-        MESSAGE(FATAL_ERROR "Project name must be set")
-    ENDIF(_CONCRETE_PROJECT_NAME)
+    if(_CONCRETE_PROJECT_NAME)
+        set_property(CACHE CONCRETE_PROJECT_NAME PROPERTY VALUE ${_CONCRETE_PROJECT_NAME})
+    else()
+        message(FATAL_ERROR "Project name must be set")
+    endif()
 
-    IF (_CONCRETE_PROJECT_LANGUAGES)
-        FOREACH(var ${_CONCRETE_PROJECT_LANGUAGES})
-            CONCRETE_INTERNAL_METHOD_CHECK_LANGUAGE_SUPPORTED(${var} result)
+    if (_CONCRETE_PROJECT_LANGUAGES)
+        foreach(var ${_CONCRETE_PROJECT_LANGUAGES})
+            concrete_check_language_supported(${var} result)
             
-            IF(NOT ${result})
-                MESSAGE(FATAL_ERROR "Not supported language ${var}")
-            ENDIF(NOT ${result})
-        ENDFOREACH(var ${_CONCRETE_PROJECT_LANGUAGES})
+            if(NOT ${result})
+                message(FATAL_ERROR "Not supported language ${var}")
+            endif(NOT ${result})
+        endforeach(var ${_CONCRETE_PROJECT_LANGUAGES})
 
-        LIST(APPEND projectParameterList LANGUAGES ${_CONCRETE_PROJECT_LANGUAGES})
-    ELSE()
-        LIST(APPEND projectParameterList LANGUAGES C CXX)
-    ENDIF(_CONCRETE_PROJECT_LANGUAGES)
+        list(APPEND projectParameterList LANGUAGES ${_CONCRETE_PROJECT_LANGUAGES})
+    else()
+        list(APPEND projectParameterList LANGUAGES C CXX)
+    endif(_CONCRETE_PROJECT_LANGUAGES)
 
     ####################################################################
-    IF(_CONCRETE_PROJECT_VERSION)
-        SET(versionListLength)
+    if(_CONCRETE_PROJECT_VERSION)
+        set(versionListLength)
 
-        LIST(LENGTH _CONCRETE_PROJECT_VERSION versionListLength)
+        list(LENGTH _CONCRETE_PROJECT_VERSION versionListLength)
 
-        IF (${versionListLength} GREATER 0)
-            LIST(GET _CONCRETE_PROJECT_VERSION 0 major)
-            SET_PROPERTY(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR PROPERTY VALUE ${major})
-            SET_PROPERTY(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}")
-        ENDIF(${versionListLength} GREATER 0)
+        if (${versionListLength} GREATER 0)
+            list(GET _CONCRETE_PROJECT_VERSION 0 major)
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR PROPERTY VALUE ${major})
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}")
+        endif(${versionListLength} GREATER 0)
 
-        IF (${versionListLength} GREATER 1)
-            LIST(GET _CONCRETE_PROJECT_VERSION 1 minor)
-            SET_PROPERTY(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR PROPERTY VALUE ${minor})
-            SET_PROPERTY(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}")
-        ENDIF(${versionListLength} GREATER 1)
+        if (${versionListLength} GREATER 1)
+            list(GET _CONCRETE_PROJECT_VERSION 1 minor)
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR PROPERTY VALUE ${minor})
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}")
+        endif(${versionListLength} GREATER 1)
 
-        IF (${versionListLength} GREATER 2)
-            LIST(GET _CONCRETE_PROJECT_VERSION 2 patch)
-            SET_PROPERTY(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH PROPERTY VALUE ${patch})
-            SET_PROPERTY(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}")
-        ENDIF(${versionListLength} GREATER 2)
+        if (${versionListLength} GREATER 2)
+            list(GET _CONCRETE_PROJECT_VERSION 2 patch)
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH PROPERTY VALUE ${patch})
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}")
+        endif(${versionListLength} GREATER 2)
 
-        IF (${versionListLength} GREATER 3)
-            LIST(GET _CONCRETE_PROJECT_VERSION 3 tweak)
-            SET_PROPERTY(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK PROPERTY VALUE ${tweak})
-            SET_PROPERTY(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}.${CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK}")
-        ENDIF(${versionListLength} GREATER 3)
+        if (${versionListLength} GREATER 3)
+            list(GET _CONCRETE_PROJECT_VERSION 3 tweak)
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK PROPERTY VALUE ${tweak})
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}.${CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK}")
+        endif(${versionListLength} GREATER 3)
 
-        IF(NOT ${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
-            LIST(APPEND projectParameterList VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION})
-        ENDIF(NOT ${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
-    ENDIF(_CONCRETE_PROJECT_VERSION)
+        if(NOT ${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
+            list(APPEND projectParameterList VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION})
+        endif(NOT ${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
+    endif(_CONCRETE_PROJECT_VERSION)
 
-    IF (_CONCRETE_PROJECT_DESCRIPTION)
-        SET_PROPERTY(CACHE CONCRETE_PROJECT_DESCRIPTION PROPERTY VALUE ${_CONCRETE_PROJECT_DESCRIPTION})
-        LIST(APPEND projectParameterList DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION})
-    ENDIF(_CONCRETE_PROJECT_DESCRIPTION)
+    if (_CONCRETE_PROJECT_DESCRIPTION)
+        set_property(CACHE CONCRETE_PROJECT_DESCRIPTION PROPERTY VALUE ${_CONCRETE_PROJECT_DESCRIPTION})
+        list(APPEND projectParameterList DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION})
+    endif(_CONCRETE_PROJECT_DESCRIPTION)
 
-    IF (_CONCRETE_PROJECT_HOMEPAGE_URL)
-        SET_PROPERTY(CACHE CONCRETE_PROJECT_HOMEPAGE_URL PROPERTY VALUE ${_CONCRETE_PROJECT_HOMEPAGE_URL})
+    if (_CONCRETE_PROJECT_HOMEPAGE_URL)
+        set_property(CACHE CONCRETE_PROJECT_HOMEPAGE_URL PROPERTY VALUE ${_CONCRETE_PROJECT_PROJECT_HOMEPAGE_URL})
 
-        SET(cmakeVersion "$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}")
+        set(cmakeVersion "$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}")
 
-        IF (${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
-            LIST(APPEND projectParameterList HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL})
-        ENDIF(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")        
-    ENDIF(_CONCRETE_PROJECT_HOMEPAGE_URL)
+        if (${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
+            list(APPEND projectParameterList HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL})
+        endif(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")        
+    endif(_CONCRETE_PROJECT_HOMEPAGE_URL)
 
     # project command for languages, version, description, homeurl
-    PROJECT(${CONCRETE_PROJECT_NAME} ${projectParameterList})
+    project(${CONCRETE_PROJECT_NAME} ${projectParameterList})
     # end set project 
 
     # collect system information
-    CONCRETE_METHOD_COLLECT_SYSTEM_INFORMATION()
+    concrete_collect_system_information()
 
     # check compiler target
-    CONCRETE_INTERNAL_METHOD_CHECK_COMPILER_TARGET()
+    concrete_check_compiler_target()
 
-    IF(_CONCRETE_PROJECT_ROOT_DIR)
-        SET_PROPERTY(CACHE CONCRETE_PROJECT_ROOT_DIRECTORY PROPERTY VALUE ${_CONCRETE_PROJECT_ROOT_DIR})
-    ELSE(_CONCRETE_PROJECT_ROOT_DIR)
-        SET_PROPERTY(CACHE CONCRETE_PROJECT_ROOT_DIRECTORY PROPERTY VALUE ${CMAKE_HOME_DIRECTORY})
-    ENDIF(_CONCRETE_PROJECT_ROOT_DIR)
+    if(_CONCRETE_PROJECT_ROOT_DIR)
+        set_property(CACHE CONCRETE_PROJECT_ROOT_DIRECTORY PROPERTY VALUE ${_CONCRETE_PROJECT_ROOT_DIR})
+    else(_CONCRETE_PROJECT_ROOT_DIR)
+        set_property(CACHE CONCRETE_PROJECT_ROOT_DIRECTORY PROPERTY VALUE ${CMAKE_HOME_DIRECTORY})
+    endif(_CONCRETE_PROJECT_ROOT_DIR)
 
     #[[ begin set output dir ]] ########################################
-    SET(runtimeOutputDir)
+    set(runtimeOutputDir)
 
-    IF(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
-        SET(runtimeOutputDir ${_CONCRETE_PROJECT_BINARY_OUTPUT_DIR})
-    ELSE(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
-        SET(runtimeOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/bin)
-    ENDIF(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
+    if(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
+        set(runtimeOutputDir ${_CONCRETE_PROJECT_BINARY_OUTPUT_DIR})
+    else(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
+        set(runtimeOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/bin)
+    endif(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
 
-    IF (${_CONCRETE_PROJECT_COMPILER_TARGET_SUBDIRECTORY})
-        SET(runtimeOutputDir ${runtimeOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    ENDIF(${_CONCRETE_PROJECT_COMPILER_TARGET_SUBDIRECTORY})
+    if (${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_SUBDIR})
+        set(runtimeOutputDir ${runtimeOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
+    endif(${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_SUBDIR})
 
-    SET_PROPERTY(CACHE CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY PROPERTY VALUE ${runtimeOutputDir})
+    set_property(CACHE CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY PROPERTY VALUE ${runtimeOutputDir})
 
-    IF(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
-        SET(libraryOutputDir ${_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR})
-    ELSE(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
-        SET(libraryOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/lib)
-    ENDIF(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
+    if(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
+        set(libraryOutputDir ${_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR})
+    else(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
+        set(libraryOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/lib)
+    endif(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
 
-    IF (${_CONCRETE_PROJECT_COMPILER_TARGET_SUBDIRECTORY})
-        SET(libraryOutputDir ${libraryOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    ENDIF(${_CONCRETE_PROJECT_COMPILER_TARGET_SUBDIRECTORY})
+    if (${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_SUBDIR})
+        set(libraryOutputDir ${libraryOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
+    endif(${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_SUBDIR})
 
-    SET_PROPERTY(CACHE CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY PROPERTY VALUE ${libraryOutputDir})
+    set_property(CACHE CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY PROPERTY VALUE ${libraryOutputDir})
+
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY})        
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY})
 
     #[[ end set output dir ]] ########################################
 
     # begin set build types
-    SET(buildTypes "")
-    IF(_CONCRETE_PROJECT_CONFIGURATION_TYPES)
+    set(buildTypes "")
+    if(_CONCRETE_PROJECT_CONFIGURATION_TYPES)
         GET_PROPERTY(languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 
-        FOREACH(var ${_CONCRETE_PROJECT_CONFIGURATION_TYPES})
-            STRING(TOUPPER "${var}" upperValue)
+        foreach(var ${_CONCRETE_PROJECT_CONFIGURATION_TYPES})
+            string(TOUPPER "${var}" upperValue)
 
-            IF(NOT CMAKE_EXE_LINKER_FLAGS_${upperValue})
-                SET(CMAKE_EXE_LINKER_FLAGS_${upperValue} CACHE STRING "Flags used by the linker during ${upperValue} builds." FORCE)
-            ENDIF(NOT CMAKE_EXE_LINKER_FLAGS_${upperValue})
+            if(NOT CMAKE_EXE_LINKER_FLAGS_${upperValue})
+                set(CMAKE_EXE_LINKER_FLAGS_${upperValue} CACHE STRING "Flags used by the linker during ${upperValue} builds." FORCE)
+            endif(NOT CMAKE_EXE_LINKER_FLAGS_${upperValue})
             
-            FOREACH(lang ${languages})
-                SET(langUpperValue)                
-                STRING(TOUPPER "${lang}" langUpperValue)
+            foreach(lang ${languages})
+                set(langUpperValue)                
+                string(TOUPPER "${lang}" langUpperValue)
 
-                IF(NOT CMAKE_${langUpperValue}_FLAGS_${upperValue})
-                    SET(CMAKE_${langUpperValue}_FLAGS_${upperValue} CACHE STRING "Flags used by the ${langUpperValue} compiler during ${upperValue} builds." FORCE)
-                ENDIF(NOT CMAKE_${langUpperValue}_FLAGS_${upperValue})
+                if(NOT CMAKE_${langUpperValue}_FLAGS_${upperValue})
+                    set(CMAKE_${langUpperValue}_FLAGS_${upperValue} CACHE STRING "Flags used by the ${langUpperValue} compiler during ${upperValue} builds." FORCE)
+                endif(NOT CMAKE_${langUpperValue}_FLAGS_${upperValue})
 
-            ENDFOREACH(lang ${languages})            
-        ENDFOREACH(var ${_CONCRETE_PROJECT_CONFIGURATION_TYPES})
+            endforeach(lang ${languages})            
+        endforeach(var ${_CONCRETE_PROJECT_CONFIGURATION_TYPES})
 
-        IF(CMAKE_CONFIGURATION_TYPES)
-            SET_PROPERTY(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY VALUE "${_CONCRETE_PROJECT_CONFIGURATION_TYPES}")
-            SET_PROPERTY(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY HELPSTRING "configuration types")            
-        ELSE()
-            IF(NOT CMAKE_BUILD_TYPE)
-                SET(CMAKE_BUILD_TYPE "${buildTypes}" CACHE STRING "" FORCE)
-            ENDIF()
+        if(CMAKE_CONFIGURATION_TYPES)
+            set_property(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY VALUE "${_CONCRETE_PROJECT_CONFIGURATION_TYPES}")
+            set_property(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY HELPSTRING "configuration types")            
+        else()
+            if(NOT CMAKE_BUILD_TYPE)
+                set(CMAKE_BUILD_TYPE "${buildTypes}" CACHE STRING "" FORCE)
+            endif()
 
-            SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
+            set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
 
-            SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${buildTypes}")
-        ENDIF(CMAKE_CONFIGURATION_TYPES)
-    ENDIF(_CONCRETE_PROJECT_CONFIGURATION_TYPES)
+            set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${buildTypes}")
+        endif(CMAKE_CONFIGURATION_TYPES)
+    endif(_CONCRETE_PROJECT_CONFIGURATION_TYPES)
     # end set build types
 
     #[[
         add a interface target named of ConcreteInterface
         for as properties interface for other target
     #]]
-    CONCRETE_METHOD_ADD_TARGET(
+    concrete_target(
         TARGET_NAME 
             ConcreteInterface
         TYPE        
@@ -278,15 +252,13 @@ FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE)
         CREATE_ONLY
     )
     
-    CONCRETE_INTERNAL_METHOD_CLEAR_CACHE()
+    __concrete_clear_cache()
+endmacro(concrete_project)
 
-    CONCRETE_INTERNAL_METHOD_EXPORT_SCOPE_VARIABLES()
-ENDFUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE)
-
-FUNCTION(CONCRETE_METHOD_GLOBAL_TARGET_CONFIGURE)
-    SET(options)
-    SET(singleValueKey)
-    SET(mulitValueKey PROPERTIES LINK_DIRECTORIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_DEFINITIONS SOURCES)
+function(concrete_global_target_configure)
+    set(options)
+    set(singleValueKey)
+    set(mulitValueKey PROPERTIES LINK_DIRECTORIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_DEFINITIONS SOURCES)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -296,47 +268,47 @@ FUNCTION(CONCRETE_METHOD_GLOBAL_TARGET_CONFIGURE)
         ${ARGN}
     )
 
-    SET(targetName ConcreteInterface)
+    set(targetName ConcreteInterface)
 
     # TODO::参数检查
 
-    IF(_CONCRETE_PROPERTIES)
+    if(_CONCRETE_PROPERTIES)
         SET_TARGET_PROPERTIES(${targetName} PROPERTIES ${_CONCRETE_PROPERTIES})
-    ENDIF(_CONCRETE_PROPERTIES)
+    endif(_CONCRETE_PROPERTIES)
 
-    IF(_CONCRETE_LINK_OPTIONS)
+    if(_CONCRETE_LINK_OPTIONS)
         TARGET_LINK_OPTIONS(${targetName} INTERFACE ${_CONCRETE_LINK_OPTIONS})
-    ENDIF(_CONCRETE_LINK_OPTIONS)
+    endif(_CONCRETE_LINK_OPTIONS)
 
-    IF(_CONCRETE_LINK_DIRECTORIES)
+    if(_CONCRETE_LINK_DIRECTORIES)
         TARGET_LINK_DIRECTORIES(${targetName} INTERFACE ${_CONCRETE_INCLUDE_DIRECTORIES})
-    ENDIF(_CONCRETE_LINK_DIRECTORIES)
+    endif(_CONCRETE_LINK_DIRECTORIES)
 
-    IF(_CONCRETE_LINK_LIBRARIES)
+    if(_CONCRETE_LINK_LIBRARIES)
         TARGET_LINK_LIBRARIES(${targetName} INTERFACE ${_CONCRETE_LINK_LIBRARIES})
-    ENDIF(_CONCRETE_LINK_LIBRARIES)
+    endif(_CONCRETE_LINK_LIBRARIES)
 
-    IF(_CONCRETE_INCLUDE_DIRECTORIES)
+    if(_CONCRETE_INCLUDE_DIRECTORIES)
         TARGET_INCLUDE_DIRECTORIES(${targetName} INTERFACE ${_CONCRETE_INCLUDE_DIRECTORIES})
-    ENDIF(_CONCRETE_INCLUDE_DIRECTORIES)
+    endif(_CONCRETE_INCLUDE_DIRECTORIES)
 
-    IF(_CONCRETE_COMPILE_OPTIONS)
+    if(_CONCRETE_COMPILE_OPTIONS)
         TARGET_COMPILE_OPTIONS(${targetName} INTERFACE ${_CONCRETE_COMPILE_OPTIONS})
-    ENDIF(_CONCRETE_COMPILE_OPTIONS)
+    endif(_CONCRETE_COMPILE_OPTIONS)
 
-    IF(_CONCRETE_COMPILE_DEFINITIONS)
+    if(_CONCRETE_COMPILE_DEFINITIONS)
         TARGET_COMPILE_DEFINITIONS(${targetName} INTERFACE ${_CONCRETE_COMPILE_DEFINITIONS})
-    ENDIF(_CONCRETE_COMPILE_DEFINITIONS)
+    endif(_CONCRETE_COMPILE_DEFINITIONS)
 
-    IF(_CONCRETE_SOURCES)
+    if(_CONCRETE_SOURCES)
         TARGET_SOURCES(${targetName} INTERFACE ${_CONCRETE_SOURCES})
-    ENDIF(_CONCRETE_SOURCES)
-ENDFUNCTION(CONCRETE_METHOD_GLOBAL_TARGET_CONFIGURE)
+    endif(_CONCRETE_SOURCES)
+endfunction(concrete_global_target_configure)
 
-FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
-    SET(options COPY_ONLY)
-    SET(singleValueKey SOURCE_FILE_PATH DEST_FILE_PATH NEWLINE_STYLE)
-    SET(mulitValueKey COPY_OPTIONS)
+function(concrete_configure_file)
+    set(options COPY_ONLY)
+    set(singleValueKey SOURCE_FILE_PATH DEST_FILE_PATH NEWLINE_STYLE)
+    set(mulitValueKey COPY_OPTIONS)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -346,22 +318,22 @@ FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
         ${ARGN}
     )
 
-    IF(NOT _CONCRETE_SOURCE_FILE_PATH)
-        MESSAGE(FATAL_ERROR "Must set source file path")
-    ELSE()
-        IF(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
-            MESSAGE(FATAL_ERROR "Source file not exists")
-        ENDIF(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
-    ENDIF(_CONCRETE_SOURCE_FILE_PATH)
+    if(NOT _CONCRETE_SOURCE_FILE_PATH)
+        message(FATAL_ERROR "Must set source file path")
+    else()
+        if(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
+            message(FATAL_ERROR "Source file not exists")
+        endif(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
+    endif(_CONCRETE_SOURCE_FILE_PATH)
 
-    IF(NOT _CONCRETE_DEST_FILE_PATH)
-        MESSAGE(FATAL_ERROR "Must set dest file path")
-    ENDIF(NOT _CONCRETE_DEST_FILE_PATH)
+    if(NOT _CONCRETE_DEST_FILE_PATH)
+        message(FATAL_ERROR "Must set dest file path")
+    endif(NOT _CONCRETE_DEST_FILE_PATH)
 
-    IF(${_CONCRETE_COPY_ONLY})
-        IF(_CONCRETE_NEWLINE_STYLE)
-            MESSAGE(WARNING "Newline style option may not be used with CopyOnly")
-        ENDIF(_CONCRETE_NEWLINE_STYLE)
+    if(${_CONCRETE_COPY_ONLY})
+        if(_CONCRETE_NEWLINE_STYLE)
+            message(WARNING "Newline style option may not be used with CopyOnly")
+        endif(_CONCRETE_NEWLINE_STYLE)
 
         CONFIGURE_FILE(
             ${SOURCE_FILE_PATH}
@@ -369,43 +341,43 @@ FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
             COPYONLY
         )
         RETURN()
-    ENDIF(${_CONCRETE_COPY_ONLY})
+    endif(${_CONCRETE_COPY_ONLY})
 
-    SET(newlineStyle)
-    IF (_CONCRETE_NEWLINE_STYLE)
-        IF (${_CONCRETE_NEWLINE_STYLE} STREQUAL "UNIX")
-            SET(newlineStyle "UNIX") 
-        ENDIF(${_CONCRETE_NEWLINE_STYLE} STREQUAL "UNIX")
+    set(newlineStyle)
+    if (_CONCRETE_NEWLINE_STYLE)
+        if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "UNIX")
+            set(newlineStyle "UNIX") 
+        endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "UNIX")
 
-        IF (${_CONCRETE_NEWLINE_STYLE} STREQUAL "DOS")
-            SET(newlineStyle "DOS") 
-        ENDIF(${_CONCRETE_NEWLINE_STYLE} STREQUAL "DOS")        
+        if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "DOS")
+            set(newlineStyle "DOS") 
+        endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "DOS")        
 
-        IF (${_CONCRETE_NEWLINE_STYLE} STREQUAL "WIN32")
-            SET(newlineStyle "WIN32") 
-        ENDIF(${_CONCRETE_NEWLINE_STYLE} STREQUAL "WIN32")        
+        if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "WIN32")
+            set(newlineStyle "WIN32") 
+        endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "WIN32")        
 
-        IF (${_CONCRETE_NEWLINE_STYLE} STREQUAL "LF")
-            SET(newlineStyle "LF") 
-        ENDIF(${_CONCRETE_NEWLINE_STYLE} STREQUAL "LF")        
+        if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "LF")
+            set(newlineStyle "LF") 
+        endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "LF")        
 
-        IF (${_CONCRETE_NEWLINE_STYLE} STREQUAL "CRLF")
-            SET(newlineStyle "CRLF") 
-        ENDIF(${_CONCRETE_NEWLINE_STYLE} STREQUAL "CRLF")        
-    ENDIF(_CONCRETE_NEWLINE_STYLE)
+        if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "CRLF")
+            set(newlineStyle "CRLF") 
+        endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "CRLF")        
+    endif(_CONCRETE_NEWLINE_STYLE)
 
     set(copyOptions)
-    IF (_CONCRETE_COPY_OPTIONS)
-        FOREACH(var ${_CONCRETE_COPY_OPTIONS})
-            IF(${var} STREQUAL "EscapeQuotes")
-                SET(copyOptions ${copyOptions} ESCAPE_QUOTES)
-            ENDIF(${var} STREQUAL "EscapeQuotes")
+    if (_CONCRETE_COPY_OPTIONS)
+        foreach(var ${_CONCRETE_COPY_OPTIONS})
+            if(${var} STREQUAL "EscapeQuotes")
+                set(copyOptions ${copyOptions} ESCAPE_QUOTES)
+            endif(${var} STREQUAL "EscapeQuotes")
 
-            IF(${var} STREQUAL "@Only")
-                SET(copyOptions ${copyOptions} @ONLY)
-            ENDIF(${var} STREQUAL "@Only")
-        ENDFOREACH(var ${_CONCRETE_COPY_OPTIONS})            
-    ENDIF(_CONCRETE_COPY_OPTIONS)
+            if(${var} STREQUAL "@Only")
+                set(copyOptions ${copyOptions} @ONLY)
+            endif(${var} STREQUAL "@Only")
+        endforeach(var ${_CONCRETE_COPY_OPTIONS})            
+    endif(_CONCRETE_COPY_OPTIONS)
 
     CONFIGURE_FILE(
         ${SOURCE_FILE_PATH}
@@ -413,12 +385,12 @@ FUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
         ${copyOptions}
         NEWLINE_STYLE ${newlineStyle}
     )
-ENDFUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
+endfunction(concrete_configure_file)
 
-# FUNCTION(CONCRETE_METHOD_SET_GLOBAL_COMPILE_OPTIONS_AND_DEFINITIONS)
-    # SET(options APPEND WITHOUT_DEBUG USE_UNICODE WARNING_AS_ERROR)
-    # SET(singleValueKey BUILD_TYPE LANGUAGE_OR_LINKER COPY_FROM_TYPE WARNING_LEVEL DEBUG_INFO_FORMAT)
-    # SET(mulitValueKey)
+# function(CONCRETE_METHOD_SET_GLOBAL_COMPILE_OPTIONS_AND_DEFINITIONS)
+    # set(options APPEND WITHOUT_DEBUG USE_UNICODE WARNING_AS_ERROR)
+    # set(singleValueKey BUILD_TYPE LANGUAGE_OR_LINKER COPY_FROM_TYPE WARNING_LEVEL DEBUG_INFO_FORMAT)
+    # set(mulitValueKey)
     
     # CMAKE_PARSE_ARGUMENTS(
     #     _CONCRETE
@@ -428,117 +400,117 @@ ENDFUNCTION(CONCRETE_METHOD_PROJECT_CONFIGURE_FILE)
     #     ${ARGN}
     # )
 
-#     IF(NOT _CONCRETE_BUILD_TYPE)
-#         MESSAGE(FATAL_ERROR "Build type must be set")
-#     ENDIF(NOT _CONCRETE_BUILD_TYPE)
+#     if(NOT _CONCRETE_BUILD_TYPE)
+#         message(FATAL_ERROR "Build type must be set")
+#     endif(NOT _CONCRETE_BUILD_TYPE)
 
-#     IF (NOT _CONCRETE_LANGUAGE_OR_LINKER)
-#         MESSAGE(FATAL_ERROR "language or linker must be set")
-#     ENDIF(NOT _CONCRETE_LANGUAGE_OR_LINKER)
+#     if (NOT _CONCRETE_LANGUAGE_OR_LINKER)
+#         message(FATAL_ERROR "language or linker must be set")
+#     endif(NOT _CONCRETE_LANGUAGE_OR_LINKER)
 
-#     SET(flagName)
-#     IF(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
-#         IF (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#             SET(flagName CMAKE_EXE_LINKER_FLAGS)
-#         ELSE()
-#             SET(language)
+#     set(flagName)
+#     if(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
+#         if (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+#             set(flagName CMAKE_EXE_LINKER_FLAGS)
+#         else()
+#             set(language)
 #             STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
-#             SET(flagName CMAKE_${language}_FLAGS)
-#         ENDIF(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#     ELSE()
-#         SET(buildType)
+#             set(flagName CMAKE_${language}_FLAGS)
+#         endif(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+#     else()
+#         set(buildType)
 #         STRING(TOUPPER "${_CONCRETE_BUILD_TYPE}" buildType)
 
-#         IF (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#             SET(flagName CMAKE_EXE_LINKER_FLAGS_${buildType})
-#         ELSE()
-#             SET(language)
+#         if (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+#             set(flagName CMAKE_EXE_LINKER_FLAGS_${buildType})
+#         else()
+#             set(language)
 #             STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
-#             SET(flagName CMAKE_${language}_FLAGS_${buildType})
-#         ENDIF(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#     ENDIF(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
+#             set(flagName CMAKE_${language}_FLAGS_${buildType})
+#         endif(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+#     endif(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
 
-#     IF(NOT DEFINED ${flagName})
-#         MESSAGE(FATAL_ERROR "cache variable flag can not find")
-#     ENDIF(NOT DEFINED ${flagName})
+#     if(NOT DEFINED ${flagName})
+#         message(FATAL_ERROR "cache variable flag can not find")
+#     endif(NOT DEFINED ${flagName})
 
-#     SET(flagCopyFrom)
-#     IF(_CONCRETE_COPY_FROM_TYPE)
-#         IF(${_CONCRETE_COPY_FROM_TYPE} STREQUAL "ALL_BUILD")
-#             IF (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#                 SET(flagCopyFrom CMAKE_EXE_LINKER_FLAGS)
-#             ELSE()
-#                 SET(language)
+#     set(flagCopyFrom)
+#     if(_CONCRETE_COPY_FROM_TYPE)
+#         if(${_CONCRETE_COPY_FROM_TYPE} STREQUAL "ALL_BUILD")
+#             if (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+#                 set(flagCopyFrom CMAKE_EXE_LINKER_FLAGS)
+#             else()
+#                 set(language)
 #                 STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
-#                 SET(flagCopyFrom CMAKE_${language}_FLAGS)
-#             ENDIF(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#         ELSE()
-#             SET(buildType)
+#                 set(flagCopyFrom CMAKE_${language}_FLAGS)
+#             endif(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+#         else()
+#             set(buildType)
 #             STRING(TOUPPER "${_CONCRETE_COPY_FROM_TYPE}" buildType)
 
-#             IF (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#                 SET(flagCopyFrom CMAKE_EXE_LINKER_FLAGS_${buildType})
-#             ELSE()
-#                 SET(language)
+#             if (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+#                 set(flagCopyFrom CMAKE_EXE_LINKER_FLAGS_${buildType})
+#             else()
+#                 set(language)
 #                 STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
-#                 SET(flagCopyFrom CMAKE_${language}_FLAGS_${buildType})
-#             ENDIF(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#         ENDIF(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
+#                 set(flagCopyFrom CMAKE_${language}_FLAGS_${buildType})
+#             endif(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
+#         endif(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
 
-#         IF(NOT DEFINED ${flagCopyFrom})
-#             MESSAGE(FATAL_ERROR "Copy source not exists")
-#         ELSE()
-#             SET_PROPERTY(CACHE ${flagName} PROPERTY VALUE "${${flagCopyFrom}}")
+#         if(NOT DEFINED ${flagCopyFrom})
+#             message(FATAL_ERROR "Copy source not exists")
+#         else()
+#             set_property(CACHE ${flagName} PROPERTY VALUE "${${flagCopyFrom}}")
 
 #             RETURN()
-#         ENDIF(NOT DEFINED ${flagCopyFrom})
-#     ENDIF(_CONCRETE_COPY_FROM_TYPE)
+#         endif(NOT DEFINED ${flagCopyFrom})
+#     endif(_CONCRETE_COPY_FROM_TYPE)
 
-#     SET(length)
-#     SET(flags "")
-#     IF(${_CONCRETE_APPEND})
-#         SET(flags "${${flagName}}")
+#     set(length)
+#     set(flags "")
+#     if(${_CONCRETE_APPEND})
+#         set(flags "${${flagName}}")
         
 #         STRING(LENGTH "${flags}" length)
-#         IF(NOT ${length} EQUAL 0)
+#         if(NOT ${length} EQUAL 0)
 #             STRING(APPEND flags " ")
-#         ENDIF(NOT ${length} EQUAL 0)
-#     ENDIF(${_CONCRETE_APPEND})
+#         endif(NOT ${length} EQUAL 0)
+#     endif(${_CONCRETE_APPEND})
 
-#     IF(${_CONCRETE_WITHOUT_DEBUG})
+#     if(${_CONCRETE_WITHOUT_DEBUG})
 #         CONCRETE_INTERNAL_METHOD_ADD_NDEBUG_FLAG(flags)
-#     ENDIF(${_CONCRETE_WITHOUT_DEBUG})
+#     endif(${_CONCRETE_WITHOUT_DEBUG})
 
-#     IF (${_CONCRETE_WARNING_AS_ERROR})
+#     if (${_CONCRETE_WARNING_AS_ERROR})
 #         CONCRETE_INTERNAL_METHOD_ADD_WARNING_AS_ERROR_FLAG(flags)
-#     ENDIF(${_CONCRETE_WARNING_AS_ERROR})
+#     endif(${_CONCRETE_WARNING_AS_ERROR})
 
-#     IF(${_CONCRETE_USE_UNICODE})
+#     if(${_CONCRETE_USE_UNICODE})
 #         CONCRETE_INTERNAL_METHOD_ADD_UNICODE_FLAG(flags)
-#     ENDIF(${_CONCRETE_USE_UNICODE})
+#     endif(${_CONCRETE_USE_UNICODE})
 
-#     IF(_CONCRETE_WARNING_LEVEL)
+#     if(_CONCRETE_WARNING_LEVEL)
 #         CONCRETE_INTERNAL_METHOD_ADD_WARNING_LEVEL_FLAG(flags ${_CONCRETE_WARNING_LEVEL})
-#     ENDIF(_CONCRETE_WARNING_LEVEL)
+#     endif(_CONCRETE_WARNING_LEVEL)
 
-#     IF (_CONCRETE_DEBUG_INFO_FORMAT)
+#     if (_CONCRETE_DEBUG_INFO_FORMAT)
 #         CONCRETE_INTERNAL_METHOD_ADD_DEBUG_INFO_FORMAT(flags ${_CONCRETE_DEBUG_INFO_FORMAT})
-#     ENDIF(_CONCRETE_DEBUG_INFO_FORMAT)
+#     endif(_CONCRETE_DEBUG_INFO_FORMAT)
 
 #     STRING(LENGTH "${flags}" length)
 
-#     IF(NOT ${length} EQUAL 0)
+#     if(NOT ${length} EQUAL 0)
 #         # pop last space char
 #         CONCRETE_METHOD_STRING_POP_LAST(flags 1 flags)
 
-#         SET_PROPERTY(CACHE ${flagName} PROPERTY VALUE "${flags}")
-#     ENDIF(NOT ${length} EQUAL 0)
-# ENDFUNCTION(CONCRETE_METHOD_SET_GLOBAL_COMPILE_OPTIONS_AND_DEFINITIONS)
+#         set_property(CACHE ${flagName} PROPERTY VALUE "${flags}")
+#     endif(NOT ${length} EQUAL 0)
+# endfunction(CONCRETE_METHOD_SET_GLOBAL_COMPILE_OPTIONS_AND_DEFINITIONS)
 
-FUNCTION(CONCRETE_METHOD_SET_GLOBAL_PROPERTIES)
-    SET(options)
-    SET(singleValueKey)
-    SET(mulitValueKey PROPERTIES)
+function(concrete_set_global_properties)
+    set(options)
+    set(singleValueKey)
+    set(mulitValueKey PROPERTIES)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -548,24 +520,24 @@ FUNCTION(CONCRETE_METHOD_SET_GLOBAL_PROPERTIES)
         ${ARGN}
     )
 
-    IF (_CONCRETE_PROPERTIES)
-        SET(index 0)
-        LIST(LENGTH _CONCRETE_PROPERTIES length)
+    if (_CONCRETE_PROPERTIES)
+        set(index 0)
+        list(LENGTH _CONCRETE_PROPERTIES length)
 
         WHILE(${index} LESS ${length})
-            LIST(GET _CONCRETE_PROPERTIES ${index} key)
+            list(GET _CONCRETE_PROPERTIES ${index} key)
 
-            MATH(EXPR indexIncrement "${index} + 1")
+            math(EXPR indexIncrement "${index} + 1")
 
-            LIST(GET _CONCRETE_PROPERTIES ${indexIncrement} value)
+            list(GET _CONCRETE_PROPERTIES ${indexIncrement} value)
 
-            SET_PROPERTY(GLOBAL PROPERTY ${key} ${value})
+            set_property(GLOBAL PROPERTY ${key} ${value})
 
-            MATH(EXPR index "${index} + 2")
+            math(EXPR index "${index} + 2")
         ENDWHILE(${index} LESS ${length})
-    ENDIF(_CONCRETE_PROPERTIES)
-ENDFUNCTION(CONCRETE_METHOD_SET_GLOBAL_PROPERTIES)
+    endif(_CONCRETE_PROPERTIES)
+endfunction(concrete_set_global_properties)
 
-FUNCTION(CONCRETE_METHOD_SET_VS_STARTUP_PROJECT TARGET)
-    SET_PROPERTY(DIRECTORY ${CMAKE_HOME_DIRECTORY} PROPERTY VS_STARTUP_PROJECT ${TARGET})
-ENDFUNCTION(CONCRETE_METHOD_SET_VS_STARTUP_PROJECT)
+function(concrete_set_vs_startup_project TARGET)
+    set_property(DIRECTORY ${CMAKE_HOME_DIRECTORY} PROPERTY VS_STARTUP_PROJECT ${TARGET})
+endfunction(concrete_set_vs_startup_project)

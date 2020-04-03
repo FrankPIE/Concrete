@@ -19,12 +19,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-FUNCTION(CONCRETE_METHOD_ADD_SUBDIRECTORYS)
-    SET(options NEW_PROJECT_AS_SUBDIRECTORY)
-    SET(singleValueKey BINARY_ROOT_DIRECTORY)
-    SET(mulitValueKey SOURCE_DIRECTORYS BINARY_DIRECTORIES FOLDERS)
+function(concrete_add_subdirectory)
+    set(options NEW_PROJECT_AS_SUBDIRECTORY)
+    set(singleValueKey BINARY_ROOT_DIRECTORY)
+    set(mulitValueKey SOURCE_DIRECTORYS BINARY_DIRECTORIES FOLDERS)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -34,46 +34,46 @@ FUNCTION(CONCRETE_METHOD_ADD_SUBDIRECTORYS)
         ${ARGN}
     )
 
-    IF(_CONCRETE_BINARY_ROOT_DIRECTORY)
-        SET(binaryRootDir ${_CONCRETE_BINARY_ROOT_DIRECTORY})
-    ELSE()
-        SET(binaryRootDir ${CMAKE_BINARY_DIR})
-    ENDIF(_CONCRETE_BINARY_ROOT_DIRECTORY)
+    if(_CONCRETE_BINARY_ROOT_DIRECTORY)
+        set(binaryRootDir ${_CONCRETE_BINARY_ROOT_DIRECTORY})
+    else()
+        set(binaryRootDir ${CMAKE_BINARY_DIR})
+    endif(_CONCRETE_BINARY_ROOT_DIRECTORY)
 
-    IF (_CONCRETE_SOURCE_DIRECTORYS)
-        SET(index 0)
+    if (_CONCRETE_SOURCE_DIRECTORYS)
+        set(index 0)
 
-        LIST(LENGTH _CONCRETE_SOURCE_DIRECTORYS length)
-        WHILE(${index} LESS ${length})
-            SET(paramList)
+        list(LENGTH _CONCRETE_SOURCE_DIRECTORYS length)
+        while(${index} LESS ${length})
+            set(paramList)
 
-            LIST(GET _CONCRETE_SOURCE_DIRECTORYS ${index} sourceDir)
+            list(GET _CONCRETE_SOURCE_DIRECTORYS ${index} sourceDir)
 
-            LIST(APPEND paramList ${sourceDir})
+            list(APPEND paramList ${sourceDir})
 
-            IF(_CONCRETE_BINARY_DIRECTORIES)
-                LIST(GET _CONCRETE_BINARY_DIRECTORIES ${index} binaryDir)
+            if(_CONCRETE_BINARY_DIRECTORIES)
+                list(GET _CONCRETE_BINARY_DIRECTORIES ${index} binaryDir)
 
-                IF (NOT ${binaryDir} STREQUAL "")
-                    LIST(APPEND paramList ${binaryRootDir}/${binaryDir})
-                ENDIF(NOT ${binaryDir} STREQUAL "")
-            ENDIF(_CONCRETE_BINARY_DIRECTORIES)
+                if (NOT ${binaryDir} STREQUAL "")
+                    list(APPEND paramList ${binaryRootDir}/${binaryDir})
+                endif(NOT ${binaryDir} STREQUAL "")
+            endif(_CONCRETE_BINARY_DIRECTORIES)
 
-            IF(${_CONCRETE_NEW_PROJECT_AS_SUBDIRECTORY})
-                LIST(APPEND paramList EXCLUDE_FROM_ALL)
-            ENDIF(${_CONCRETE_NEW_PROJECT_AS_SUBDIRECTORY})
+            if(${_CONCRETE_NEW_PROJECT_AS_SUBDIRECTORY})
+                list(APPEND paramList EXCLUDE_FROM_ALL)
+            endif(${_CONCRETE_NEW_PROJECT_AS_SUBDIRECTORY})
 
-            ADD_SUBDIRECTORY(${paramList})
+            add_subdirectory(${paramList})
 
-            IF (_CONCRETE_FOLDERS)
-                LIST(GET _CONCRETE_FOLDERS ${index} folderName)
+            if (_CONCRETE_FOLDERS)
+                list(GET _CONCRETE_FOLDERS ${index} folderName)
 
-                IF(NOT ${folderName} STREQUAL "")
-                    SET_PROPERTY(DIRECTORY "${sourceDir}" PROPERTY FOLDER "${folderName}")
-                ENDIF(NOT ${folderName} STREQUAL "")
-            ENDIF(_CONCRETE_FOLDERS)
+                if(NOT ${folderName} STREQUAL "")
+                    set_property(DIRECTORY "${sourceDir}" PROPERTY FOLDER "${folderName}")
+                endif(NOT ${folderName} STREQUAL "")
+            endif(_CONCRETE_FOLDERS)
     
-            MATH(EXPR index "${index} + 1")
-        ENDWHILE(${index} LESS ${length})
-    ENDIF(_CONCRETE_SOURCE_DIRECTORYS)
-ENDFUNCTION(CONCRETE_METHOD_ADD_SUBDIRECTORYS)
+            math(EXPR index "${index} + 1")
+        endwhile(${index} LESS ${length})
+    endif(_CONCRETE_SOURCE_DIRECTORYS)
+endfunction(concrete_add_subdirectory)

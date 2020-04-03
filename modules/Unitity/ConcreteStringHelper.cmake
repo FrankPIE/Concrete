@@ -19,22 +19,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-FUNCTION(CONCRETE_METHOD_STRING_POP_LAST VALUE POP_COUNT OUTPUT)
-    STRING(LENGTH "${${VALUE}}" length)
-    MATH(EXPR length "${length} - ${POP_COUNT}")
+function(concrete_string_pop_last VALUE POP_COUNT OUTPUT)
+    string(LENGTH "${${VALUE}}" length)
+    math(EXPR length "${length} - ${POP_COUNT}")
 
-    IF(${length} LESS 0)
-        MESSAGE(FATAL_ERROR "Pop too many char")
-    ELSE()
-        STRING(SUBSTRING "${${VALUE}}" 0 ${length} ${OUTPUT})
+    if(${length} LESS 0)
+        message(FATAL_ERROR "Pop too many char")
+    else()
+        string(SUBSTRING "${${VALUE}}" 0 ${length} ${OUTPUT})
 
-        SET(${OUTPUT} ${${OUTPUT}} PARENT_SCOPE)
-    ENDIF(${length} LESS 0)
-ENDFUNCTION(CONCRETE_METHOD_STRING_POP_LAST)
+        set(${OUTPUT} ${${OUTPUT}} PARENT_SCOPE)
+    endif(${length} LESS 0)
+endfunction(concrete_string_pop_last)
 
-FUNCTION(CONCRETE_METHOD_UUID UUID)
+function(concrete_uuid UUID)
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
         "UPPER"
@@ -43,20 +43,20 @@ FUNCTION(CONCRETE_METHOD_UUID UUID)
         ${ARGN}
     )
 
-    SET(namespace "6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+    set(namespace "6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 
-    STRING(RANDOM LENGTH 5 name)
+    string(RANDOM LENGTH 5 name)
 
-    IF(${_CONCRETE_UPPER})
-        SET(upper UPPER)
-    ENDIF()
+    if(${_CONCRETE_UPPER})
+        set(upper UPPER)
+    endif()
 
-    STRING(UUID uuid NAMESPACE ${namespace} NAME ${name} TYPE MD5 ${upper})
+    string(UUID uuid NAMESPACE ${namespace} NAME ${name} TYPE MD5 ${upper})
 
-    SET(${UUID} ${uuid} PARENT_SCOPE)
-ENDFUNCTION(CONCRETE_METHOD_UUID)
+    set(${UUID} ${uuid} PARENT_SCOPE)
+endfunction(concrete_uuid)
 
-FUNCTION(CONCRETE_METHOD_SEPARATE_ARGUMENTS VALUE OUTPUT)
+function(concrete_separate_arguments VALUE OUTPUT)
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
         ""
@@ -65,63 +65,63 @@ FUNCTION(CONCRETE_METHOD_SEPARATE_ARGUMENTS VALUE OUTPUT)
         ${ARGN}
     )
 
-    IF (_CONCRETE_COMMAND_MODE)
-        SET(commandModeStr ${_CONCRETE_COMMAND_MODE})
-        IF (${commandModeStr} STREQUAL "Windows")
-            SET(commandMode WINDOWS_COMMAND)
-        ELSEIF(${commandModeStr} STREQUAL "UNIX")
-            SET(commandMode UNIX_COMMAND)
-        ELSE()
-            MESSAGE(FATAL_MESSAGE "unknown command mode")
-        ENDIF()
-    ELSE()
-        SET(commandMode NATIVE_COMMAND)
-    ENDIF()
+    if (_CONCRETE_COMMAND_MODE)
+        set(commandModeStr ${_CONCRETE_COMMAND_MODE})
+        if (${commandModeStr} STREQUAL "Windows")
+            set(commandMode WINDOWS_COMMAND)
+        elseif(${commandModeStr} STREQUAL "UNIX")
+            set(commandMode UNIX_COMMAND)
+        else()
+            message(FATAL_MESSAGE "unknown command mode")
+        endif()
+    else()
+        set(commandMode NATIVE_COMMAND)
+    endif()
 
-    SEPARATE_ARGUMENTS(list ${commandMode} ${VALUE})
+    separate_arguments(list ${commandMode} ${VALUE})
 
-    SET(index 0)
-    SET(listArguments)
+    set(index 0)
+    set(listArguments)
 
-    SET(start FALSE)
-    FOREACH(var ${list})
-        IF (NOT ${start})
-            STRING(FIND ${var} "'" pos)
+    set(start FALSE)
+    foreach(var ${list})
+        if (NOT ${start})
+            string(FIND ${var} "'" pos)
 
-            IF (${pos} EQUAL 0)
-                SET(start TRUE)
+            if (${pos} EQUAL 0)
+                set(start TRUE)
 
-                SET(stringCat)
+                set(stringCat)
 
-                STRING(SUBSTRING ${var} 1 -1 var)
-            ENDIF()
-        ENDIF()
+                string(SUBSTRING ${var} 1 -1 var)
+            endif()
+        endif()
 
-        IF (${start})
-            STRING(FIND ${var} "'" pos REVERSE)
+        if (${start})
+            string(FIND ${var} "'" pos REVERSE)
 
-            STRING(LENGTH ${var} length)
-            MATH(EXPR length "${length} - 1")
+            string(LENGTH ${var} length)
+            math(EXPR length "${length} - 1")
 
-            IF (${pos} EQUAL ${length})
-                SET(start FLASE)                
+            if (${pos} EQUAL ${length})
+                set(start FLASE)                
 
-                STRING(SUBSTRING ${var} 0 ${length} var)
+                string(SUBSTRING ${var} 0 ${length} var)
 
-                STRING(APPEND stringCat "${var}")
+                string(APPEND stringCat "${var}")
 
                 LIST(APPEND listArguments ${stringCat})
 
                 CONTINUE()
-            ENDIF()
-        ENDIF()
+            endif()
+        endif()
 
-        IF (${start})
-            STRING(APPEND stringCat "${var} ")
-        ELSE()
+        if (${start})
+            string(APPEND stringCat "${var} ")
+        else()
             LIST(APPEND listArguments ${var})
-        ENDIF()
-    ENDFOREACH()
+        endif()
+    endforeach()
 
-    SET(${OUTPUT} ${listArguments} PARENT_SCOPE)
-ENDFUNCTION(CONCRETE_METHOD_SEPARATE_ARGUMENTS)
+    set(${OUTPUT} ${listArguments} PARENT_SCOPE)
+endfunction(concrete_separate_arguments)

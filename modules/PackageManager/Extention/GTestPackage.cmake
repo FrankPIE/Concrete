@@ -19,16 +19,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-FUNCTION(CONCRETE_METHOD_FIND_GOOGLE_TEST_PACKAGE)
-    SET(options)
+function(concrete_package_google_test)
+    set(options)
 
-    SET(singleValueKey
+    set(singleValueKey
         VERSION
         )
 
-    SET(mulitValueKey GTEST_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
+    set(mulitValueKey GTEST_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE_GTEST
@@ -38,20 +38,20 @@ FUNCTION(CONCRETE_METHOD_FIND_GOOGLE_TEST_PACKAGE)
         ${ARGN}
     )
 
-    IF(_CONCRETE_GTEST_VERSION)
-        SET(targetPackageVersion ${_CONCRETE_GTEST_VERSION})
-    ELSE()
-        SET(targetPackageVersion "1.10.0")
-    ENDIF()
+    if(_CONCRETE_GTEST_VERSION)
+        set(targetPackageVersion ${_CONCRETE_GTEST_VERSION})
+    else()
+        set(targetPackageVersion "1.10.0")
+    endif()
 
-    IF (_CONCRETE_GTEST_CONFIGURE_TYPE)
-        SET(buildOptions CMAKE_STANDARD_BUILD_OPTIONS)
-        SET(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_GTEST_CONFIGURE_TYPE})
-    ENDIF()
+    if (_CONCRETE_GTEST_CONFIGURE_TYPE)
+        set(buildOptions CMAKE_STANDARD_BUILD_OPTIONS)
+        set(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_GTEST_CONFIGURE_TYPE})
+    endif()
 
-    SET(cmakeBuildOptions ${buildOptions} ${configureType})
+    set(cmakeBuildOptions ${buildOptions} ${configureType})
 
-    CONCRETE_METHOD_FIND_PACKAGE(
+    concrete_package(
         googletest
 
         VERSION ${targetPackageVersion}
@@ -65,7 +65,7 @@ FUNCTION(CONCRETE_METHOD_FIND_GOOGLE_TEST_PACKAGE)
                 ${cmakeBuildOptions}
 
                 DOWNLOAD_OPTIONS
-                    PACKAGE_TYPE GIT
+                    PACKAGE_TYPE git
                     REPOSITORY https://github.com/google/googletest.git
                     COMMIT_TAG "release-${targetPackageVersion}"
             
@@ -73,5 +73,5 @@ FUNCTION(CONCRETE_METHOD_FIND_GOOGLE_TEST_PACKAGE)
             ${_CONCRETE_GTEST_GTEST_FIND_PACKAGE_ARGUMENTS}
     )
 
-    SET(GTest_FOUND ${GTest_FOUND} PARENT_SCOPE)
-ENDFUNCTION(CONCRETE_METHOD_FIND_GOOGLE_TEST_PACKAGE)
+    set(GTest_FOUND ${GTest_FOUND} PARENT_SCOPE)
+endfunction(concrete_package_google_test)

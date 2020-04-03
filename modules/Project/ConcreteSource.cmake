@@ -19,56 +19,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-FUNCTION(CONCRETE_METHOD_SOURCE_LIST LIST)
-    SET(options)
+function(concrete_sources_list list)
+    set(options)
 
-    SET(macros "MSVC")
+    set(macros "MSVC")
 
-    FOREACH(macro ${macros})
-        LIST(APPEND singleValueKey "${macro}_SOURCES_FOLDER")
-        LIST(APPEND mulitValueKey "${macro}_SOURCES")
-    ENDFOREACH(macro ${macros})
+    foreach(macro ${macros})
+        list(APPEND singleValueKey "${macro}_SOURCES_FOLDER")
+        list(APPEND mulitValueKey "${macro}_SOURCES")
+    endforeach(macro ${macros})
 
-    LIST(APPEND singleValueKey "SOURCES_FOLDER")
-    LIST(APPEND mulitValueKey "SOURCES")
-
-    CMAKE_PARSE_ARGUMENTS(
-        _CONCRETE
-        "${options}"
-        "${singleValueKey}"
-        "${mulitValueKey}"
-        ${ARGN}
-    )
-
-    IF (_CONCRETE_SOURCES)
-        LIST(APPEND ${LIST} ${_CONCRETE_SOURCES})
-
-        IF (_CONCRETE_SOURCES_FOLDER)
-            SOURCE_GROUP(${_CONCRETE_SOURCES_FOLDER} FILES ${_CONCRETE_SOURCES})
-        ENDIF(_CONCRETE_SOURCES_FOLDER)
-
-    ENDIF(_CONCRETE_SOURCES)    
-
-    IF(MSVC)
-        IF(_CONCRETE_MSVC_SOURCES)
-            LIST(APPEND ${LIST} ${_CONCRETE_MSVC_SOURCES})
-            SET(${LIST}_MSVC ${_CONCRETE_MSVC_SOURCES} PARENT_SCOPE)
-
-            IF (_CONCRETE_MSVC_SOURCES_FOLDER)
-                SOURCE_GROUP(${_CONCRETE_MSVC_SOURCES_FOLDER} FILES ${_CONCRETE_MSVC_SOURCES})
-            ENDIF(_CONCRETE_MSVC_SOURCES_FOLDER)
-        ENDIF(_CONCRETE_MSVC_SOURCES)
-    ENDIF(MSVC)
-
-    SET(${LIST} ${${LIST}} PARENT_SCOPE)
-ENDFUNCTION(CONCRETE_METHOD_SOURCE_LIST)
-
-FUNCTION(CONCRETE_METHOD_SOURCE_DIRECTORY_ANALYSE PREFIX DIRECTORY)
-    SET(options)
-    SET(singleValueKey)
-    SET(mulitValueKey EXT)     
+    list(APPEND singleValueKey "SOURCES_FOLDER")
+    list(APPEND mulitValueKey "SOURCES")
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -78,65 +42,101 @@ FUNCTION(CONCRETE_METHOD_SOURCE_DIRECTORY_ANALYSE PREFIX DIRECTORY)
         ${ARGN}
     )
 
-    IF(_CONCRETE_EXT)
-        FOREACH(var ${_CONCRETE_EXT})
-            LIST(APPEND expressions "${DIRECTORY}/*.${var}")
-        ENDFOREACH(var ${_CONCRETE_EXT})
+    if (_CONCRETE_SOURCES)
+        list(APPEND ${list} ${_CONCRETE_SOURCES})
 
-        SET(exts ${_CONCRETE_EXT})
-    ELSE()
-        LIST(APPEND expressions "${DIRECTORY}/*.*")
-    ENDIF(_CONCRETE_EXT)
+        if (_CONCRETE_SOURCES_FOLDER)
+            source_group(${_CONCRETE_SOURCES_FOLDER} FILES ${_CONCRETE_SOURCES})
+        endif(_CONCRETE_SOURCES_FOLDER)
 
-    FILE(GLOB_RECURSE children LIST_DIRECTORIES false RELATIVE ${DIRECTORY} ${expressions})
+    endif(_CONCRETE_SOURCES)    
 
-    FOREACH(child ${children})
+    if(MSVC)
+        if(_CONCRETE_MSVC_SOURCES)
+            list(APPEND ${list} ${_CONCRETE_MSVC_SOURCES})
+            set(${list}_MSVC ${_CONCRETE_MSVC_SOURCES} PARENT_SCOPE)
+
+            if (_CONCRETE_MSVC_SOURCES_FOLDER)
+                source_group(${_CONCRETE_MSVC_SOURCES_FOLDER} FILES ${_CONCRETE_MSVC_SOURCES})
+            endif(_CONCRETE_MSVC_SOURCES_FOLDER)
+        endif(_CONCRETE_MSVC_SOURCES)
+    endif(MSVC)
+
+    set(${list} ${${list}} PARENT_SCOPE)
+endfunction(concrete_sources_list)
+
+function(concrete_source_directory_analyse PREFIX DIRECTORY)
+    set(options)
+    set(singleValueKey)
+    set(mulitValueKey EXT)     
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueKey}"
+        "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    if(_CONCRETE_EXT)
+        foreach(var ${_CONCRETE_EXT})
+            list(APPEND expressions "${DIRECTORY}/*.${var}")
+        endforeach(var ${_CONCRETE_EXT})
+
+        set(exts ${_CONCRETE_EXT})
+    else()
+        list(APPEND expressions "${DIRECTORY}/*.*")
+    endif(_CONCRETE_EXT)
+
+    file(GLOB_RECURSE children LIST_DIRECTORIES false RELATIVE ${DIRECTORY} ${expressions})
+
+    foreach(child ${children})
         GET_FILENAME_COMPONENT(dir  ${child} DIRECTORY)
         GET_FILENAME_COMPONENT(file ${child} NAME)
         GET_FILENAME_COMPONENT(ext  ${child} LAST_EXT)
 
-        IF ("${dir}" STREQUAL "")
-            SET(dir "root")
-            SET(dirName "ROOT")
+        if ("${dir}" STREQUAL "")
+            set(dir "root")
+            set(dirName "ROOT")
 
-            SET("${PREFIX}_${dirName}_DIR" "${DIRECTORY}" PARENT_SCOPE)
-            SET("${PREFIX}_${dirName}_DIR_NAME" "" PARENT_SCOPE)
+            set("${PREFIX}_${dirName}_DIR" "${DIRECTORY}" PARENT_SCOPE)
+            set("${PREFIX}_${dirName}_DIR_NAME" "" PARENT_SCOPE)
 
-            SET(sourceFile "${DIRECTORY}/${file}")
-        ELSE()
-            STRING(REPLACE "/" "_" dirName "${dir}")
-            STRING(REPLACE "/" "\\" dirGroup "${dir}")
-            STRING(TOUPPER ${dirName} dirName)
+            set(sourceFile "${DIRECTORY}/${file}")
+        else()
+            string(REPLACE "/" "_" dirName "${dir}")
+            string(REPLACE "/" "\\" dirGroup "${dir}")
+            string(TOUPPER ${dirName} dirName)
 
-            SET("${PREFIX}_${dirName}_DIR" "${DIRECTORY}/${dir}" PARENT_SCOPE)
-            SET("${PREFIX}_${dirName}_DIR_NAME" "${dirGroup}" PARENT_SCOPE)
+            set("${PREFIX}_${dirName}_DIR" "${DIRECTORY}/${dir}" PARENT_SCOPE)
+            set("${PREFIX}_${dirName}_DIR_NAME" "${dirGroup}" PARENT_SCOPE)
 
-            SET(sourceFile "${DIRECTORY}/${dir}/${file}")
-        ENDIF("${dir}" STREQUAL "")
+            set(sourceFile "${DIRECTORY}/${dir}/${file}")
+        endif("${dir}" STREQUAL "")
 
-        LIST(APPEND "${PREFIX}_${dirName}_SOURCES" "${sourceFile}")
-        SET("${PREFIX}_${dirName}_SOURCES" "${${PREFIX}_${dirName}_SOURCES}" PARENT_SCOPE)
+        list(APPEND "${PREFIX}_${dirName}_SOURCES" "${sourceFile}")
+        set("${PREFIX}_${dirName}_SOURCES" "${${PREFIX}_${dirName}_SOURCES}" PARENT_SCOPE)
 
-        LIST(APPEND "${PREFIX}_ALL_SOURCES" "${sourceFile}")
+        list(APPEND "${PREFIX}_ALL_SOURCES" "${sourceFile}")
 
-        IF (NOT "${exts}" STREQUAL "")
-            STRING(SUBSTRING ${ext} 1 -1 extName)
-            STRING(TOUPPER ${extName} extName)
+        if (NOT "${exts}" STREQUAL "")
+            string(SUBSTRING ${ext} 1 -1 extName)
+            string(TOUPPER ${extName} extName)
 
-            LIST(APPEND "${PREFIX}_${dirName}_SOURCES_${extName}" "${sourceFile}")
+            list(APPEND "${PREFIX}_${dirName}_SOURCES_${extName}" "${sourceFile}")
 
-            LIST(APPEND "${PREFIX}_ALL_SOURCES_${extName}" "${sourceFile}")
+            list(APPEND "${PREFIX}_ALL_SOURCES_${extName}" "${sourceFile}")
 
-            SET("${PREFIX}_${dirName}_SOURCES_${extName}" "${${PREFIX}_${dirName}_SOURCES_${extName}}" PARENT_SCOPE)
-        ENDIF(NOT "${exts}" STREQUAL "")
-    ENDFOREACH(child ${children})
+            set("${PREFIX}_${dirName}_SOURCES_${extName}" "${${PREFIX}_${dirName}_SOURCES_${extName}}" PARENT_SCOPE)
+        endif(NOT "${exts}" STREQUAL "")
+    endforeach(child ${children})
 
-    SET("${PREFIX}_ALL_SOURCES" "${${PREFIX}_ALL_SOURCES}" PARENT_SCOPE)
+    set("${PREFIX}_ALL_SOURCES" "${${PREFIX}_ALL_SOURCES}" PARENT_SCOPE)
 
-    IF (NOT "${exts}" STREQUAL "")
-        STRING(SUBSTRING ${ext} 1 -1 extName)
-        STRING(TOUPPER ${extName} extName)
+    if (NOT "${exts}" STREQUAL "")
+        string(SUBSTRING ${ext} 1 -1 extName)
+        string(TOUPPER ${extName} extName)
 
-        SET("${PREFIX}_ALL_SOURCES_${extName}" "${${PREFIX}_ALL_SOURCES_${extName}}" PARENT_SCOPE)
-    ENDIF(NOT "${exts}" STREQUAL "")
-ENDFUNCTION(CONCRETE_METHOD_SOURCE_DIRECTORY_ANALYSE)
+        set("${PREFIX}_ALL_SOURCES_${extName}" "${${PREFIX}_ALL_SOURCES_${extName}}" PARENT_SCOPE)
+    endif(NOT "${exts}" STREQUAL "")
+endfunction(concrete_source_directory_analyse)

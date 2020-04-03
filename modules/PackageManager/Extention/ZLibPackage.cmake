@@ -19,16 +19,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-FUNCTION(CONCRETE_METHOD_FIND_ZLIB_PACKAGE)
-    SET(options)
+function(concrete_package_zlib)
+    set(options)
 
-    SET(singleValueKey
+    set(singleValueKey
         VERSION
         )
 
-    SET(mulitValueKey ZLIB_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
+    set(mulitValueKey ZLIB_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE_ZLIB
@@ -38,20 +38,20 @@ FUNCTION(CONCRETE_METHOD_FIND_ZLIB_PACKAGE)
         ${ARGN}
     )
 
-    IF (_CONCRETE_ZLIB_CONFIGURE_TYPE)
-        SET(buildOptions CMAKE_STANDARD_BUILD_OPTIONS)
-        SET(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_ZLIB_CONFIGURE_TYPE})
-    ENDIF()
+    if (_CONCRETE_ZLIB_CONFIGURE_TYPE)
+        set(buildOptions CMAKE_STANDARD_BUILD_OPTIONS)
+        set(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_ZLIB_CONFIGURE_TYPE})
+    endif()
 
-    IF(_CONCRETE_ZLIB_VERSION)
-        SET(targetPackageVersion ${_CONCRETE_ZLIB_VERSION})
-    ELSE()
-        SET(targetPackageVersion "1.2.11")
-    ENDIF()
+    if(_CONCRETE_ZLIB_VERSION)
+        set(targetPackageVersion ${_CONCRETE_ZLIB_VERSION})
+    else()
+        set(targetPackageVersion "1.2.11")
+    endif()
 
-    SET(cmakeBuildOptions ${buildOptions} ${configureType})
+    set(cmakeBuildOptions ${buildOptions} ${configureType})
 
-    CONCRETE_METHOD_FIND_PACKAGE(
+    concrete_package(
         zip
 
         VERSION ${targetPackageVersion}
@@ -65,11 +65,13 @@ FUNCTION(CONCRETE_METHOD_FIND_ZLIB_PACKAGE)
                 ${cmakeBuildOptions}
 
                 DOWNLOAD_OPTIONS
-                    PACKAGE_TYPE GIT
+                    PACKAGE_TYPE git
                     REPOSITORY https://github.com/madler/zlib.git
                     COMMIT_TAG "v${targetPackageVersion}"
 
         ZLIB_FIND_PACKAGE_ARGUMENTS
             ${_CONCRETE_ZLIB_ZLIB_FIND_PACKAGE_ARGUMENTS}
     )
-ENDFUNCTION(CONCRETE_METHOD_FIND_ZLIB_PACKAGE)
+
+    set(ZLib_FOUND ${ZLib_FOUND} PARENT_SCOPE)
+endfunction(concrete_package_zlib)

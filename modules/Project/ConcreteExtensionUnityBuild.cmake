@@ -19,25 +19,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
 # TODO::For Directory Scope
-FUNCTION(CONCRETE_INTERNAL_METHOD_IS_USE_UNITY_BUILD TARGET OUTPUT)
-    GET_PROPERTY(globalUnityBuildSet GLOBAL PROPERTY USE_UNITY_BUILD_FOR_ALL_TARGETS SET)
+function(concrete_is_use_unity_build TARGET OUTPUT)
+    get_property(globalUnityBuildSet GLOBAL PROPERTY USE_UNITY_BUILD_FOR_ALL_TARGETS set)
 
-    IF (${globalUnityBuildSet})
-        GET_PROPERTY(globalUnityBuild GLOBAL PROPERTY USE_UNITY_BUILD_FOR_ALL_TARGETS)
-    ELSE()
-        SET(globalUnityBuild 0)
-    ENDIF(${globalUnityBuildSet})
+    if (${globalUnityBuildSet})
+        get_property(globalUnityBuild GLOBAL PROPERTY USE_UNITY_BUILD_FOR_ALL_TARGETS)
+    else()
+        set(globalUnityBuild 0)
+    endif(${globalUnityBuildSet})
 
-    GET_PROPERTY(unityBuildSet TARGET ${TARGET} PROPERTY USE_UNITY_BUILD SET)
+    get_property(unityBuildSet TARGET ${TARGET} PROPERTY USE_UNITY_BUILD set)
 
-    IF (${unityBuildSet})
-        GET_PROPERTY(unityBuild TARGET ${TARGET} PROPERTY USE_UNITY_BUILD)
-    ELSE()
-        SET(unityBuild 0)
-    ENDIF(${unityBuildSet})
+    if (${unityBuildSet})
+        get_property(unityBuild TARGET ${TARGET} PROPERTY USE_UNITY_BUILD)
+    else()
+        set(unityBuild 0)
+    endif(${unityBuildSet})
 
     # the target is use unity build
     # globalFlagSet globalFlag targetFlagSet targetFlag Result
@@ -46,13 +46,13 @@ FUNCTION(CONCRETE_INTERNAL_METHOD_IS_USE_UNITY_BUILD TARGET OUTPUT)
     # 1             1          0             0          1
     # other                                             0
 
-    IF(${unityBuild})
-        SET(${OUTPUT} 1 PARENT_SCOPE)
-        RETURN()
-    ELSEIF(${globalUnityBuild} AND NOT ${unityBuildSet})
-        SET(${OUTPUT} 1 PARENT_SCOPE)
-        RETURN()
-    ENDIF(${unityBuild})
+    if(${unityBuild})
+        set(${OUTPUT} 1 PARENT_SCOPE)
+        return()
+    elseif(${globalUnityBuild} AND NOT ${unityBuildSet})
+        set(${OUTPUT} 1 PARENT_SCOPE)
+        return()
+    endif(${unityBuild})
 
-    SET(${OUTPUT} 0 PARENT_SCOPE)
-ENDFUNCTION(CONCRETE_INTERNAL_METHOD_IS_USE_UNITY_BUILD)
+    set(${OUTPUT} 0 PARENT_SCOPE)
+endfunction(concrete_is_use_unity_build)

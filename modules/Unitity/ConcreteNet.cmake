@@ -19,12 +19,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-FUNCTION(CONCRETE_METHOD_DOWNLOAD_FILE URI DEST_PATH HASH)
-    SET(options)
-    SET(singleValueKey HASH_TYPE)
-    SET(mulitValueKey)
+function(concrete_download URI DEST_PATH HASH)
+    set(options)
+    set(singleValueKey HASH_TYPE)
+    set(mulitValueKey)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -34,31 +34,31 @@ FUNCTION(CONCRETE_METHOD_DOWNLOAD_FILE URI DEST_PATH HASH)
         ${ARGN}
     )
 
-    IF (_CONCRETE_HASH_TYPE)
-        SET(hashType ${_CONCRETE_HASH_TYPE})
-    ELSE()
-        SET(hashType SHA1)
-    ENDIF(_CONCRETE_HASH_TYPE)
+    if (_CONCRETE_HASH_TYPE)
+        set(hashType ${_CONCRETE_HASH_TYPE})
+    else()
+        set(hashType SHA1)
+    endif(_CONCRETE_HASH_TYPE)
 
-    SET(target ${CONCRETE_PROJECT_ROOT_DIRECTORY}/${DEST_PATH})
+    set(target ${CONCRETE_PROJECT_ROOT_DIRECTORY}/${DEST_PATH})
 
-    IF (EXISTS ${target})
-        CONCRETE_METHOD_HASH(${target} ${hashType} value)
+    if (EXISTS ${target})
+        concrete_hash(${target} ${hashType} value)
 
-        IF (${value} STREQUAL ${HASH})
-            RETURN()
-        ENDIF(${value} STREQUAL ${HASH})
+        if (${value} STREQUAL ${HASH})
+            return()
+        endif(${value} STREQUAL ${HASH})
 
-        CONCRETE_METHOD_REMOVE_FILE(FILES ${target})
-    ENDIF(EXISTS ${target})
+        concrete_remove_file(FILES ${target})
+    endif(EXISTS ${target})
 
-    SET(inactivityTimeout 5)
-    SET(timeout 15)
+    set(inactivityTimeout 5)
+    set(timeout 15)
 
-    FILE(DOWNLOAD ${URI} ${target} 
+    file(DOWNLOAD ${URI} ${target} 
         INACTIVITY_TIMEOUT ${inactivityTimeout}
         SHOW_PROGRESS
         TIMEOUT ${timeout}
         EXPECTED_HASH ${hashType}=${HASH}
     )
-ENDFUNCTION(CONCRETE_METHOD_DOWNLOAD_FILE)
+endfunction(concrete_download)

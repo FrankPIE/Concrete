@@ -19,24 +19,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-INCLUDE ( CMakePrintHelpers )
+include ( CMakePrintHelpers )
 
-FUNCTION(CONCRETE_METHOD_DEBUG_PRINT_VARIABLES)
-    FOREACH(var ${ARGN})
-       LIST(APPEND msg "${var}=\"${${var}}\"")
-    ENDFOREACH()
+function(concrete_debug_print_variables)
+    foreach(var ${ARGN})
+       list(APPEND msg "${var}=\"${${var}}\"")
+    endforeach()
 
-    MESSAGE(DEBUG "DEBUG INFO : ${msg}")
-ENDFUNCTION(CONCRETE_METHOD_DEBUG_PRINT_VARIABLES)
+    message(DEBUG "DEBUG INFO : ${msg}")
+endfunction(concrete_debug_print_variables)
 
-FUNCTION(CONCRETE_METHOD_DEBUG_PRINT_PROPERTIES)
+function(concrete_debug_print_properties)
     CMAKE_PRINT_PROPERTIES(${ARGN})
-ENDFUNCTION(CONCRETE_METHOD_DEBUG_PRINT_PROPERTIES)
+endfunction(concrete_debug_print_properties)
 
-FUNCTION(CONCRETE_METHOD_DEBUG_WATCH_VARIABLE)
-    FOREACH(var ${ARGN})
-        VARIABLE_WATCH(${var})
-    ENDFOREACH()
-ENDFUNCTION(CONCRETE_METHOD_DEBUG_WATCH_VARIABLE)
+function(concrete_debug_watch_variable)
+    foreach(var ${ARGN})
+        variable_watch(${var})
+    endforeach()
+endfunction(concrete_debug_watch_variable)

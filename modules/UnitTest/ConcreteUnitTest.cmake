@@ -19,10 +19,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FUNCTION (CONCRETE_METHOD_UTEST_TEST_STR_EQUAL LHS RHS)
-    IF ("${${LHS}}" STREQUAL "${${RHS}}")
-        MESSAGE(STATUS "[Test OK] -- ${LHS} == ${RHS}")
-    ELSE()
-        MESSAGE(FATAL_ERROR "[Test ERROR] -- ${LHS} == ${RHS}")
-    ENDIF()
-ENDFUNCTION(CONCRETE_UTEST_STR_EQUAL)
+function (concrete_utest_str_equal LHS RHS)
+    if ("${${LHS}}" STREQUAL "${${RHS}}")
+        message(STATUS "[Test OK] -- ${LHS} == ${RHS}")
+    else()
+        message(FATAL_ERROR "[Test ERROR] -- ${LHS} == ${RHS}")
+    endif()
+endfunction(CONCRETE_UTEST_STR_EQUAL)
