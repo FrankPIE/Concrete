@@ -220,19 +220,19 @@ FUNCTION(concrete_fecth_content PACKAGE_NAME)
     IF(_CONCRETE_SOURCE_DIR)
         SET(sourceDirectory ${_CONCRETE_SOURCE_DIR})
     ELSE()
-        SET(sourceDirectory ${CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY}/${packageName}/source)
+        SET(sourceDirectory ${FETCHCONTENT_BASE_DIR}/${packageName}/source)
     ENDIF(_CONCRETE_SOURCE_DIR)
 
     IF (_CONCRETE_BINARY_DIR)
         SET(binaryDirectory ${_CONCRETE_BINARY_DIR})
     ELSE()
-        SET(binaryDirectory ${CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY}/${packageName}/install)
+        SET(binaryDirectory ${FETCHCONTENT_BASE_DIR}/${packageName}/install)
     ENDIF(_CONCRETE_BINARY_DIR)
 
     IF (_CONCRETE_SUBBUILD_DIR)
         SET(subBuildDirectory ${_CONCRETE_SUBBUILD_DIR})
     ELSE()
-        SET(subBuildDirectory ${CONCRETE_PROJECT_PACKAGE_CONFIG_DIRECTORY}/${packageName}/cmake-project)
+        SET(subBuildDirectory ${FETCHCONTENT_BASE_DIR}/${packageName}/cmake-project)
     ENDIF(_CONCRETE_SUBBUILD_DIR)
 
     LIST(APPEND fetchContentParamters 

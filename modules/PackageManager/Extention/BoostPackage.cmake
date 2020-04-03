@@ -208,7 +208,9 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
     ENDIF()
 
     CONCRETE_METHOD_FIND_PACKAGE(
-        ${targetPackageName}
+        boost
+
+        PACKAGES ${targetPackageName}
 
         VERSION ${targetPackageVersion}
         
@@ -224,7 +226,7 @@ FUNCTION(CONCRETE_METHOD_FIND_BOOST_PACKAGE)
                     "COMMANDS b2 stage ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} toolset=${toolset}-${toolsetVersion} address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
                     "COMMANDS b2 install ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} --prefix=PACKAGE_BINARY_DIR address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
 
-        FIND_PACKAGE_ARGUMENTS
+        BOOST_FIND_PACKAGE_ARGUMENTS
             ${_CONCRETE_BOOST_FIND_PACKAGE_ARGUMENTS}
     )
 
