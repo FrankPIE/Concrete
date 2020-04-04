@@ -231,5 +231,7 @@ function(concrete_package_boost)
     )
 
     set(Boost_FOUND ${Boost_FOUND} PARENT_SCOPE)
+
+    concrete_export_package_manager_path(boost)
 endfunction(concrete_package_boost)
 

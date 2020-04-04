@@ -74,4 +74,7 @@ function(concrete_package_google_test)
     )
 
     set(GTest_FOUND ${GTest_FOUND} PARENT_SCOPE)
+
+    concrete_export_package_manager_path(googletest)
+
 endfunction(concrete_package_google_test)

@@ -324,12 +324,12 @@ function(__concrete_cmake_standard_commands CommandsOutput)
         set(installDir "${${lcPackageName}_BINARY_DIR}")
     endif()
 
-    set(dirs ${rootDir} ${installDir})
+    set(dirs rootDir installDir)
 
     foreach(var ${dirs})
-        string(REPLACE "PACKAGE_SOURCE_DIR" "${${lcPackageName}_SOURCE_DIR}" var ${var})
-        string(REPLACE "PACKAGE_BINARY_DIR" "${${lcPackageName}_BINARY_DIR}" var ${var})
-        string(REPLACE "PACKAGE_SUBBUILD_DIR" "${${lcPackageName}_SUBBUILD_DIR}" var ${var})        
+        string(REPLACE "PACKAGE_SOURCE_DIR" "${${lcPackageName}_SOURCE_DIR}" ${var} ${${var}})
+        string(REPLACE "PACKAGE_BINARY_DIR" "${${lcPackageName}_BINARY_DIR}" ${var} ${${var}})
+        string(REPLACE "PACKAGE_SUBBUILD_DIR" "${${lcPackageName}_SUBBUILD_DIR}" ${var} ${${var}})        
     endforeach()
     
     concrete_uuid(uuid)
@@ -374,13 +374,17 @@ function(__concrete_cmake_standard_commands CommandsOutput)
         endif()
     endif()
 
-    if (_CONCRETE_CMAKE_ARGS)
-        string(APPEND generatorCommand "${_CONCRETE_CMAKE_ARGS} ")
-    endif()
+    string(APPEND generatorCommand "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} ")
 
     string(APPEND generatorCommand "-DCMAKE_INSTALL_PREFIX=${installDir} ")
 
-    string(APPEND generatorCommand "./.. WORKING_DIRECTORY ${buildDir}")
+    if (_CONCRETE_CMAKE_ARGS)
+        foreach(var ${_CONCRETE_CMAKE_ARGS})
+            string(APPEND generatorCommand "-D${var} ")
+        endforeach()    
+    endif()
+
+    string(APPEND generatorCommand "${rootDir} WORKING_DIRECTORY ${buildDir}")
 
     list(APPEND commands ${generatorCommand})
 
@@ -528,6 +532,8 @@ function(__concrete_fecth_package PACKAGE_NAME)
     list(APPEND CMAKE_PREFIX_PATH ${${lcPackageName}_BINARY_DIR} ${${lcPackageName}_SOURCE_DIR})
 
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
+
+    concrete_export_package_manager_path(${lcPackageName})
 endfunction(__concrete_fecth_package)
 
 function(concrete_package PACKAGE_NAME)
@@ -576,11 +582,11 @@ function(concrete_package PACKAGE_NAME)
         endif(${packageVersionDefined})
     endif(_CONCRETE_VERSION)
 
-    __concrete_fecth_package(${PACKAGE_NAME} ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS})
-
     if (_CONCRETE_DEPEND_PACKAGES_PATH)
-      list(APPEND CMAKE_PREFIX_PATH ${_CONCRETE_DEPEND_PACKAGES_PATH})
+        list(APPEND CMAKE_PREFIX_PATH ${_CONCRETE_DEPEND_PACKAGES_PATH})
     endif()
+
+    __concrete_fecth_package(${PACKAGE_NAME} ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS})
 
     if (_CONCRETE_PACKAGES)
         foreach(var ${_CONCRETE_PACKAGES})
@@ -594,6 +600,10 @@ function(concrete_package PACKAGE_NAME)
 
         set(${PACKAGE_NAME}_FOUND ${${PACKAGE_NAME}_FOUND} PARENT_SCOPE)
     endif()
+
+    string(TOLOWER ${PACKAGE_NAME} lcPackageName)
+
+    concrete_export_package_manager_path(${lcPackageName})
 endfunction(concrete_package)
 
 function(concrete_set_package_manager_properties)
@@ -620,3 +630,9 @@ function(concrete_set_package_manager_properties)
         set_property(CACHE FETCHCONTENT_BASE_DIR PROPERTY VALUE ${_CONCRETE_BASE_DIR})
     endif()
 endfunction(concrete_set_package_manager_properties)
+
+macro(concrete_export_package_manager_path PACKAGE_NAME)
+    set(${PACKAGE_NAME}_SOURCE_DIR ${${PACKAGE_NAME}_SOURCE_DIR} PARENT_SCOPE)
+    set(${PACKAGE_NAME}_BINARY_DIR ${${PACKAGE_NAME}_BINARY_DIR} PARENT_SCOPE)
+    set(${PACKAGE_NAME}_SUBBUILD_DIR ${${PACKAGE_NAME}_SUBBUILD_DIR} PARENT_SCOPE)
+endmacro(concrete_export_package_manager_path)

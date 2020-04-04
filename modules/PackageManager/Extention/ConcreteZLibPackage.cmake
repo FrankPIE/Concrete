@@ -21,7 +21,7 @@
 
 include_guard(GLOBAL)
 
-function(concrete_package_zlib)
+function(concrete_package_zip)
     set(options)
 
     set(singleValueKey
@@ -74,4 +74,7 @@ function(concrete_package_zlib)
     )
 
     set(ZLib_FOUND ${ZLib_FOUND} PARENT_SCOPE)
-endfunction(concrete_package_zlib)
+
+    concrete_export_package_manager_path(zip)
+
+endfunction(concrete_package_zip)
