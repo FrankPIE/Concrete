@@ -23,7 +23,6 @@ include_guard(GLOBAL)
 
 include( CMakeParseArguments )
 
-include( Project/Internal/ConcreteProcessProperty )
 include( Project/Internal/ConcreteCheckLanguage )
 
 function(__concrete_clear_cache)
@@ -144,7 +143,7 @@ macro(concrete_project)
     endif(_CONCRETE_PROJECT_DESCRIPTION)
 
     if (_CONCRETE_PROJECT_HOMEPAGE_URL)
-        set_property(CACHE CONCRETE_PROJECT_HOMEPAGE_URL PROPERTY VALUE ${_CONCRETE_PROJECT_PROJECT_HOMEPAGE_URL})
+        set_property(CACHE CONCRETE_PROJECT_HOMEPAGE_URL PROPERTY VALUE ${_CONCRETE_PROJECT_HOMEPAGE_URL})
 
         set(cmakeVersion "$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}")
 

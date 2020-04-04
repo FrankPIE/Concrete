@@ -23,7 +23,7 @@ include_guard(GLOBAL)
 
 # TODO::For Directory Scope
 function(concrete_is_use_unity_build TARGET OUTPUT)
-    get_property(globalUnityBuildSet GLOBAL PROPERTY USE_UNITY_BUILD_FOR_ALL_TARGETS set)
+    get_property(globalUnityBuildSet GLOBAL PROPERTY USE_UNITY_BUILD_FOR_ALL_TARGETS SET)
 
     if (${globalUnityBuildSet})
         get_property(globalUnityBuild GLOBAL PROPERTY USE_UNITY_BUILD_FOR_ALL_TARGETS)
@@ -31,7 +31,7 @@ function(concrete_is_use_unity_build TARGET OUTPUT)
         set(globalUnityBuild 0)
     endif(${globalUnityBuildSet})
 
-    get_property(unityBuildSet TARGET ${TARGET} PROPERTY USE_UNITY_BUILD set)
+    get_property(unityBuildSet TARGET ${TARGET} PROPERTY USE_UNITY_BUILD SET)
 
     if (${unityBuildSet})
         get_property(unityBuild TARGET ${TARGET} PROPERTY USE_UNITY_BUILD)
