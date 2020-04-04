@@ -47,6 +47,6 @@ INCLUDE( Project/ConcreteProject )
 
 # Concrete Package Manager
 INCLUDE( PackageManager/ConcretePackageManager )
-INCLUDE( PackageManager/Extention/BoostPackage )
-INCLUDE( PackageManager/Extention/GTestPackage )
-INCLUDE( PackageManager/Extention/ZLibPackage )
+INCLUDE( PackageManager/Extention/ConcreteBoostPackage )
+INCLUDE( PackageManager/Extention/ConcreteGTestPackage )
+INCLUDE( PackageManager/Extention/ConcreteZLibPackage )
