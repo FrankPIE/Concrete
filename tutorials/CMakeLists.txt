@@ -39,7 +39,7 @@ concrete_project(
     ROOT_DIR            ${CMAKE_HOME_DIRECTORY}/../
     BINARY_OUTPUT_DIR   ${CMAKE_HOME_DIRECTORY}/../bin
     LIBRARY_OUTPUT_DIR  ${CMAKE_HOME_DIRECTORY}/../lib
-    WITH_COMPILER_TARGET_SUBDIR    
+    WITH_COMPILER_TARGET_POSTFIX    
 )
 
 concrete_set_global_properties(

@@ -61,7 +61,7 @@ endfunction(concrete_check_compiler_target)
 # https://bitbucket.org/ignitionrobotics/ign-cmake/issues/7/the-top-level-cmakeliststxt-file-for-a
 macro(concrete_project)         
     set(options 
-        WITH_COMPILER_TARGET_SUBDIR 
+        WITH_COMPILER_TARGET_POSTFIX 
     )
 
     set(singleValueKey 
@@ -177,9 +177,9 @@ macro(concrete_project)
         set(runtimeOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/bin)
     endif(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
 
-    if (${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_SUBDIR})
+    if (${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_POSTFIX})
         set(runtimeOutputDir ${runtimeOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    endif(${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_SUBDIR})
+    endif(${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_POSTFIX})
 
     set_property(CACHE CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY PROPERTY VALUE ${runtimeOutputDir})
 
@@ -189,9 +189,9 @@ macro(concrete_project)
         set(libraryOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/lib)
     endif(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
 
-    if (${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_SUBDIR})
+    if (${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_POSTFIX})
         set(libraryOutputDir ${libraryOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    endif(${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_SUBDIR})
+    endif(${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_POSTFIX})
 
     set_property(CACHE CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY PROPERTY VALUE ${libraryOutputDir})
 
