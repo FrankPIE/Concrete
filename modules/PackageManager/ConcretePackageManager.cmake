@@ -338,7 +338,7 @@ function(__concrete_cmake_standard_commands CommandsOutput)
 
     concrete_create_directorys(DIRECTORYS ${buildDir} ABSOULT_PATH)
 
-    set(generatorCommand "COMMANDS cmake ")
+    set(generatorCommand "COMMANDS ${CMAKE_COMMAND} ")
 
     if (_CONCRETE_CMAKE_GENERATOR)
         string(APPEND generatorCommand "-G '${_CONCRETE_CMAKE_GENERATOR}' ")
@@ -395,13 +395,13 @@ function(__concrete_cmake_standard_commands CommandsOutput)
     endif()
 
     foreach(var ${configureTypes})
-        set(buildCommand "COMMANDS cmake --build . --config ${var} WORKING_DIRECTORY ${buildDir}")
+        set(buildCommand "COMMANDS ${CMAKE_COMMAND} --build . --config ${var} WORKING_DIRECTORY ${buildDir}")
 
         list(APPEND commands ${buildCommand})
     endforeach()    
 
     foreach(var ${configureTypes})
-        set(installCommand "COMMANDS cmake --install . --config ${var} --prefix ${installDir} WORKING_DIRECTORY ${buildDir}")
+        set(installCommand "COMMANDS ${CMAKE_COMMAND} --install . --config ${var} --prefix ${installDir} WORKING_DIRECTORY ${buildDir}")
 
         list(APPEND commands ${installCommand})
     endforeach() 
