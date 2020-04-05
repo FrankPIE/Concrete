@@ -43,15 +43,12 @@ function(concrete_package_protobuf)
     endif()
 
     if (_CONCRETE_PROTOBUF_CONFIGURE_TYPE)
-        set(buildOptions CMAKE_STANDARD_BUILD_OPTIONS)
         set(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_PROTOBUF_CONFIGURE_TYPE})
     endif()
 
     if (_CONCRETE_PROTOBUF_ZLIB_ROOT)
         set(zlibRootDir ${_CONCRETE_PROTOBUF_ZLIB_ROOT})
     endif()
-
-    set(cmakeBuildOptions ${buildOptions} ${configureType})
 
     set(links 
         "https://github.com/protocolbuffers/protobuf/releases/download/v${targetPackageVersion}/protobuf-cpp-${targetPackageVersion}.tar.gz"
@@ -71,6 +68,7 @@ function(concrete_package_protobuf)
                 CMAKE_STANDARD_BUILD_OPTIONS
                     ROOT_DIR "PACKAGE_SOURCE_DIR/cmake"
                     CMAKE_ARGS "protobuf_BUILD_TESTS=OFF"
+                    ${configureType}
     
                 DOWNLOAD_OPTIONS
                     PACKAGE_TYPE url
