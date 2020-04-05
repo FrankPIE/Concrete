@@ -380,7 +380,7 @@ function(__concrete_cmake_standard_commands CommandsOutput)
 
     if (_CONCRETE_CMAKE_ARGS)
         foreach(var ${_CONCRETE_CMAKE_ARGS})
-            string(APPEND generatorCommand "-D${var} ")
+            string(APPEND generatorCommand "${var} ")
         endforeach()    
     endif()
 

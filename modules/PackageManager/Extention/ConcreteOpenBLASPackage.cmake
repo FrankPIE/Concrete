@@ -21,66 +21,64 @@
 
 include_guard(GLOBAL)
 
-function(concrete_package_protobuf)
+function(concrete_package_open_blas)
     set(options)
 
-    set(singleValueKey VERSION ZLIB_ROOT)
+    set(singleValueKey
+        VERSION PKG_CONFIG_ROOT
+        )
 
-    set(mulitValueKey PROTOBUF_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
+    set(mulitValueKey BLAS_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
 
     CMAKE_PARSE_ARGUMENTS(
-        _CONCRETE_PROTOBUF
+        _CONCRETE_BLAS
         "${options}"
         "${singleValueKey}"
         "${mulitValueKey}"
         ${ARGN}
     )
 
-    if(_CONCRETE_PROTOBUF_VERSION)
-        set(targetPackageVersion ${_CONCRETE_PROTOBUF_VERSION})
+    if(_CONCRETE_BLAS_VERSION)
+        set(targetPackageVersion ${_CONCRETE_BLAS_VERSION})
     else()
-        set(targetPackageVersion "3.11.4")
+        set(targetPackageVersion "0.3.9")
     endif()
 
-    if (_CONCRETE_PROTOBUF_CONFIGURE_TYPE)
-        set(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_PROTOBUF_CONFIGURE_TYPE})
+    if (_CONCRETE_BLAS_CONFIGURE_TYPE)
+        set(configureType CMAKE_CONFIGURE_TYPES ${_CONCRETE_BLAS_CONFIGURE_TYPE})
     endif()
 
-    if (_CONCRETE_PROTOBUF_ZLIB_ROOT)
-        set(zlibRootDir ${_CONCRETE_PROTOBUF_ZLIB_ROOT})
+    if (_CONCRETE_BLAS_PKG_CONFIG_ROOT)
+        set(pkgConfigRoot ${_CONCRETE_BLAS_PKG_CONFIG_ROOT})
     endif()
-
-    set(links 
-        "https://github.com/protocolbuffers/protobuf/releases/download/v${targetPackageVersion}/protobuf-cpp-${targetPackageVersion}.tar.gz"
-    )
 
     concrete_package(
-        protobuf
+        blas
     
         VERSION "${targetPackageVersion}"
     
-        PACKAGES Protobuf
+        PACKAGES BLAS
     
         FETCH_PACKAGE_ARGUMENTS
             DOWNLOAD_BUILD_STEP_OPTIONS
                 BUILD_TOOLSET "CMake"
     
                 CMAKE_STANDARD_BUILD_OPTIONS
-                    ROOT_DIR "PACKAGE_SOURCE_DIR/cmake"
-                    CMAKE_ARGS "-Dprotobuf_BUILD_TESTS=OFF"
+                    CMAKE_ARGS "-Wno-dev"
                     ${configureType}
     
                 DOWNLOAD_OPTIONS
-                    PACKAGE_TYPE url
-                    LINKS ${links}
+                    PACKAGE_TYPE git
+                    REPOSITORY   "https://github.com/xianyi/OpenBLAS.git"
+                    COMMIT_TAG   "v${targetPackageVersion}"
     
-        DEPEND_PACKAGES_PATH ${zlibRootDir}
+        DEPEND_PACKAGES_PATH ${pkgConfigRoot}
 
-        PROTOBUF_FIND_PACKAGE_ARGUMENTS
-            ${_CONCRETE_PROTOBUF_PROTOBUF_FIND_PACKAGE_ARGUMENTS}
+        BLAS_FIND_PACKAGE_ARGUMENTS
+            ${_CONCRETE_BLAS_BLAS_FIND_PACKAGE_ARGUMENTS}
     )
 
-    set(Protobuf_FOUND ${Protobuf_FOUND} PARENT_SCOPE)
+    set(BLAS_FOUND ${BLAS_FOUND} PARENT_SCOPE)
 
-    concrete_export_package_manager_path(protobuf)
-endfunction(concrete_package_protobuf)
+    concrete_export_package_manager_path(blas)
+endfunction(concrete_package_open_blas)
