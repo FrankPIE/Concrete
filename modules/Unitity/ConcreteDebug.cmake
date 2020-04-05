@@ -28,7 +28,7 @@ function(concrete_debug_print_variables)
        list(APPEND msg "${var}=\"${${var}}\"")
     endforeach()
 
-    message(DEBUG "DEBUG INFO : ${msg}")
+    concrete_debug("DEBUG INFO : ${msg}")
 endfunction(concrete_debug_print_variables)
 
 function(concrete_debug_print_properties)

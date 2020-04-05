@@ -85,7 +85,7 @@ macro(concrete_project)
     if(_CONCRETE_PROJECT_NAME)
         set_property(CACHE CONCRETE_PROJECT_NAME PROPERTY VALUE ${_CONCRETE_PROJECT_NAME})
     else()
-        message(FATAL_ERROR "Project name must be set")
+        concrete_error("Project name must be set")
     endif()
 
     if (_CONCRETE_PROJECT_LANGUAGES)
@@ -93,7 +93,7 @@ macro(concrete_project)
             concrete_check_language_supported(${var} result)
             
             if(NOT ${result})
-                message(FATAL_ERROR "Not supported language ${var}")
+                concrete_error("Not supported language ${var}")
             endif(NOT ${result})
         endforeach(var ${_CONCRETE_PROJECT_LANGUAGES})
 
@@ -318,20 +318,20 @@ function(concrete_configure_file)
     )
 
     if(NOT _CONCRETE_SOURCE_FILE_PATH)
-        message(FATAL_ERROR "Must set source file path")
+        concrete_error("Must set source file path")
     else()
         if(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
-            message(FATAL_ERROR "Source file not exists")
+            concrete_error("Source file not exists")
         endif(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
     endif(_CONCRETE_SOURCE_FILE_PATH)
 
     if(NOT _CONCRETE_DEST_FILE_PATH)
-        message(FATAL_ERROR "Must set dest file path")
+        concrete_error("Must set dest file path")
     endif(NOT _CONCRETE_DEST_FILE_PATH)
 
     if(${_CONCRETE_COPY_ONLY})
         if(_CONCRETE_NEWLINE_STYLE)
-            message(WARNING "Newline style option may not be used with CopyOnly")
+            concrete_warning("Newline style option may not be used with CopyOnly")
         endif(_CONCRETE_NEWLINE_STYLE)
 
         CONFIGURE_FILE(
@@ -400,11 +400,11 @@ endfunction(concrete_configure_file)
     # )
 
 #     if(NOT _CONCRETE_BUILD_TYPE)
-#         message(FATAL_ERROR "Build type must be set")
+#         concrete_error("Build type must be set")
 #     endif(NOT _CONCRETE_BUILD_TYPE)
 
 #     if (NOT _CONCRETE_LANGUAGE_OR_LINKER)
-#         message(FATAL_ERROR "language or linker must be set")
+#         concrete_error("language or linker must be set")
 #     endif(NOT _CONCRETE_LANGUAGE_OR_LINKER)
 
 #     set(flagName)
@@ -430,7 +430,7 @@ endfunction(concrete_configure_file)
 #     endif(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
 
 #     if(NOT DEFINED ${flagName})
-#         message(FATAL_ERROR "cache variable flag can not find")
+#         concrete_error("cache variable flag can not find")
 #     endif(NOT DEFINED ${flagName})
 
 #     set(flagCopyFrom)
@@ -457,7 +457,7 @@ endfunction(concrete_configure_file)
 #         endif(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
 
 #         if(NOT DEFINED ${flagCopyFrom})
-#             message(FATAL_ERROR "Copy source not exists")
+#             concrete_error("Copy source not exists")
 #         else()
 #             set_property(CACHE ${flagName} PROPERTY VALUE "${${flagCopyFrom}}")
 

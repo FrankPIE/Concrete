@@ -21,8 +21,8 @@
 
 function (concrete_utest_str_equal LHS RHS)
     if ("${${LHS}}" STREQUAL "${${RHS}}")
-        message(STATUS "[Test OK] -- ${LHS} == ${RHS}")
+        concrete_status("[Test OK] -- ${LHS} == ${RHS}")
     else()
-        message(FATAL_ERROR "[Test ERROR] -- ${LHS} == ${RHS}")
+        concrete_error("[Test ERROR] -- ${LHS} == ${RHS}")
     endif()
 endfunction(CONCRETE_UTEST_STR_EQUAL)

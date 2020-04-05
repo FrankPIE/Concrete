@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2019 MadStrawberry
+# Copyright (c) 2020 MadStrawberry
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -21,38 +21,37 @@
 
 include_guard(GLOBAL)
 
-include(CheckLanguage)
+function(concrete_status)
+    message(STATUS ${ARGN})
+endfunction(concrete_status)
 
-function(concrete_check_language_supported LANG OUTPUT)
-    set(languageSet
-        C CXX CUDA OBJC OBJCXX Fortran ASM ASM_MASM ASM_NASM ASM_ATT 
-    )
+function(concrete_notice)
+    message(NOTICE ${ARGN})
+endfunction(concrete_notice)
 
-    list(FIND languageSet ${LANG} output)
+function(concrete_error)
+    message(FATAL_ERROR ${ARGN})
+endfunction(concrete_error)
 
-    if (${output} EQUAL -1)
-        set(${OUTPUT} 0 PARENT_SCOPE)
-    else()
-        set(${OUTPUT} 1 PARENT_SCOPE)        
-    endif(${output} EQUAL -1)        
-endfunction(concrete_check_language_supported)
+function(concrete_error_tip)
+    message(SEND_ERROR ${ARGN})    
+endfunction(concrete_error_tip)
 
-function(concrete_check_language LANG OUTPUT)
-    CHECK_LANGUAGE(${LANG})
+function(concrete_warning)
+    message(WARNING ${ARGN})    
+endfunction(concrete_warning)
 
-    if(CMAKE_${LANG}_COMPILER)
-        set(${OUTPUT} 1 PARENT_SCOPE)
-    else()
-        set(${OUTPUT} 0 PARENT_SCOPE)
-    endif(CMAKE_${LANG}_COMPILER)
-endfunction(concrete_check_language)
+function(concrete_debug)
+    message(DEBUG ${ARGN})
+endfunction(concrete_debug)
 
-function(concrete_enable_language LANG)
-    concrete_check_language(${LANG} found)
+function(concrete_trace)
+    message(TRACE ${ARGN})
+endfunction(concrete_trace)
 
-    if (${found} EQUAL 1)
-        enable_language(${LANG})
-    else()
-        concrete_error_tip("${LANG} language compiler is not found")
-    endif(${found} EQUAL 1)
-endfunction(concrete_enable_language)
+function(concrete_verbose)
+    message(VERBOSE ${ARGN})
+endfunction(concrete_verbose)
+
+
+
