@@ -84,13 +84,13 @@ SET(CONCRETE_ENVIONMENT_SYSTEM_INFO_OS_PLATFORM CACHE INTERNAL "See CMAKE_HOST_S
 # [[ PATH ]]
 SET(CONCRETE_PROJECT_DEFAULT_PARAMETER "__;LANGUAGES;NONE" CACHE INTERNAL "project default parameter" FORCE)
 
-# prject root dir default as ${CMAKE_SOURCE_DIR}
+# project root dir default as ${CMAKE_SOURCE_DIR}
 SET(CONCRETE_PROJECT_ROOT_DIRECTORY CACHE PATH "prject root dir default as ${CMAKE_HOME_DIRECTORY}" FORCE)
 
-# prject binary files generate directory
+# project binary files generate directory
 SET(CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY  CACHE PATH "global binary files generate directory" FORCE)
 
-# prject library files generate directory
+# project library files generate directory
 SET(CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY CACHE PATH "global library files generate directory" FORCE)
 
 # [[ INTERNAL ]]
