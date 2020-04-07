@@ -64,7 +64,7 @@ function(concrete_package_opencv)
     endif()
 
     if (${_CONCRETE_CV_WITHOUT_PERF_TESTS})
-        list(APPEND cmakeArgs "-DBUILD_BUILD_PERF_TESTS=OFF")
+        list(APPEND cmakeArgs "-DBUILD_PERF_TESTS=OFF")
     endif()
 
     if (${_CONCRETE_CV_WITHOUT_APP})
@@ -124,4 +124,8 @@ function(concrete_package_opencv)
         DEPEND_PACKAGES_PATH 
             ${_CONCRETE_CV_BLAS_ROOT}
     )
+
+    set(OpenCV_FOUND ${OpenCV_FOUND} PARENT_SCOPE)
+
+    concrete_export_package_manager_path(opencv)
 endfunction(concrete_package_opencv)
