@@ -521,7 +521,7 @@ function(__concrete_download_and_build PACKAGE_NAME)
                 endforeach()                    
 
                 if (${result} STREQUAL "0")
-                    set(CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED FALSE CACHE BOOL "${packageName} builded flag" FORCE)
+                    set(CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED TRUE CACHE BOOL "${packageName} builded flag" FORCE)
                 endif()
             endif(NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
         endif(NOT ${lcPackageName}_POPULATED)
@@ -577,6 +577,8 @@ function(concrete_package PACKAGE_NAME)
         _CONCRETE "${options}" "${singleValueKey}" "${mulitValueKey}"
         ${ARGN}
     )
+
+    set(packageName ${PACKAGE_NAME})
 
     if (_CONCRETE_VERSION)
         get_property(packageVersionDefined CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_VERSION PROPERTY VALUE SET)
