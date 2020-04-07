@@ -66,6 +66,31 @@ concrete_set_global_properties(
 #     DEBUG_INFO_FORMAT DEBUG_INFO_WRITE_IN_PDB
 # )
 
+concrete_package_boost( VERSION 1.72.0 
+        STATIC 
+        SHARED 
+        WITHOUT_BUILD "python"
+)
+
+concrete_package_google_test( VERSION "1.10.0" )
+
+concrete_package_zip( VERSION "1.2.11")
+
+concrete_package_protobuf(VERSION "3.11.4" ZLIB_ROOT "${zip_BINARY_DIR}")
+
+concrete_package_open_blas( VERSION "0.3.9")
+
+concrete_package_opencv( VERSION "3.4.9"         
+        WITHOUT_TEST 
+        WITHOUT_PERF_TESTS
+        WITHOUT_APP
+        WITHOUT_JAVA
+        WITHOUT_PYTHON
+        WITHOUT_VTK
+
+        BLAS_ROOT ${blas_BINARY_DIR}
+)
+
 CONCRETE_METHOD_ADD_SUBDIRECTORYS(
     SOURCE_DIRECTORYS  ${CMAKE_HOME_DIRECTORY}/../tutorials/HelloWorld
     BINARY_DIRECTORIES HelloWorld.project
