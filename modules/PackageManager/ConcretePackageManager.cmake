@@ -332,11 +332,29 @@ function(__concrete_cmake_standard_commands CommandsOutput)
         string(REPLACE "PACKAGE_SUBBUILD_DIR" "${${lcPackageName}_SUBBUILD_DIR}" ${var} ${${var}})        
     endforeach()
     
-    concrete_uuid(uuid)
-    
-    set(buildDir "${rootDir}/build-${uuid}")            
+    get_property(buildPathDefined CACHE CONCRETE_${packageName}_BUILD_PATH PROPERTY VALUE SET)
 
-    concrete_create_directorys(DIRECTORYS ${buildDir} ABSOULT_PATH)
+    if (NOT ${buildPathDefined})
+        concrete_uuid(uuid)
+        
+        set(buildDir "${rootDir}/build-${uuid}")            
+
+        concrete_create_directorys(DIRECTORYS ${buildDir} ABSOULT_PATH)
+
+        set(CONCRETE_${packageName}_BUILD_PATH ${buildDir} CACHE PATH "${packageName} build path" FORCE)
+    else()
+        set(buildDir "${CONCRETE_${packageName}_BUILD_PATH}")
+
+        if (NOT EXISTS ${buildDir})
+            concrete_create_directorys(DIRECTORYS ${buildDir} ABSOULT_PATH)
+        endif()
+    endif()
+
+    if (NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
+    if (EXISTS ${buildDir}/CMakeCache.txt)
+        concrete_remove_file(FILES ${buildDir}/CMakeCache.txt)
+    endif()
+    endif()
 
     set(generatorCommand "COMMANDS ${CMAKE_COMMAND} ")
 
@@ -503,7 +521,7 @@ function(__concrete_download_and_build PACKAGE_NAME)
                 endforeach()                    
 
                 if (${result} STREQUAL "0")
-                    set_property(CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE TRUE)    
+                    set(CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED FALSE CACHE BOOL "${packageName} builded flag" FORCE)
                 endif()
             endif(NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
         endif(NOT ${lcPackageName}_POPULATED)
