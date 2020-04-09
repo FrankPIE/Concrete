@@ -19,38 +19,39 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.3)
+cmake_minimum_required(VERSION 3.10.3)
 
-INCLUDE_GUARD(GLOBAL)
+include_guard(GLOBAL)
 
-INCLUDE(Extension/cotire/CMake/cotire)
+include(Extension/cotire/CMake/cotire)
 
 # Concrete modules
-INCLUDE( ConcreteVariables )
-INCLUDE( ConcreteProperties )
+include( ConcreteVariables )
+include( ConcreteProperties )
 
 # Concrete Unitity modules
-INCLUDE( Unitity/ConcreteDebug )
-INCLUDE( Unitity/ConcreteFileHelper )
-INCLUDE( Unitity/ConcreteStringHelper )
-INCLUDE( Unitity/ConcreteNet )
-INCLUDE( Unitity/ConcreteMessage )
+include( Unitity/ConcreteDebug )
+include( Unitity/ConcreteFileHelper )
+include( Unitity/ConcreteStringHelper )
+include( Unitity/ConcreteNet )
+include( Unitity/ConcreteMessage )
+include( Unitity/ConcreteOption )
 
 # Concrete Envionment modules
-INCLUDE( Environment/ConcreteDetectSystemInfo )
+include( Environment/ConcreteDetectSystemInfo )
 
 # Concrete Project modules
-INCLUDE( Project/ConcreteSource )
-INCLUDE( Project/ConcreteExtensionUnityBuild)
-INCLUDE( Project/ConcreteTarget )
-INCLUDE( Project/ConcreteDirectory )
-INCLUDE( Project/ConcreteProject )
+include( Project/ConcreteSource )
+include( Project/ConcreteExtensionUnityBuild)
+include( Project/ConcreteTarget )
+include( Project/ConcreteDirectory )
+include( Project/ConcreteProject )
 
 # Concrete Package Manager
-INCLUDE( PackageManager/ConcretePackageManager )
-INCLUDE( PackageManager/Extention/ConcreteBoostPackage )
-INCLUDE( PackageManager/Extention/ConcreteGTestPackage )
-INCLUDE( PackageManager/Extention/ConcreteZLibPackage )
-INCLUDE( PackageManager/Extention/ConcreteProtobufPackage )
-INCLUDE( PackageManager/Extention/ConcreteOpenBLASPackage )
-INCLUDE( PackageManager/Extention/ConcreteOpenCVPackage )
+include( PackageManager/ConcretePackageManager )
+include( PackageManager/Extention/ConcreteBoostPackage )
+include( PackageManager/Extention/ConcreteGTestPackage )
+include( PackageManager/Extention/ConcreteZLibPackage )
+include( PackageManager/Extention/ConcreteProtobufPackage )
+include( PackageManager/Extention/ConcreteOpenBLASPackage )
+include( PackageManager/Extention/ConcreteOpenCVPackage )
