@@ -230,7 +230,9 @@ function(concrete_package_boost)
             ${_CONCRETE_BOOST_FIND_PACKAGE_ARGUMENTS}
     )
 
-    set(Boost_FOUND ${Boost_FOUND} PARENT_SCOPE)
+    concrete_clear_moudule_cache(Boost_DIR Boost_INCLUDE_DIR boost_headers_DIR)
+
+    set(BOOST_FOUND ${BOOST_FOUND} PARENT_SCOPE)
 
     concrete_export_package_manager_path(boost)
 endfunction(concrete_package_boost)

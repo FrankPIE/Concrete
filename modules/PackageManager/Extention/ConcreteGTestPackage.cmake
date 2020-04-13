@@ -73,7 +73,9 @@ function(concrete_package_google_test)
             ${_CONCRETE_GTEST_GTEST_FIND_PACKAGE_ARGUMENTS}
     )
 
-    set(GTest_FOUND ${GTest_FOUND} PARENT_SCOPE)
+    concrete_clear_moudule_cache(GTEST_INCLUDE_DIR GTEST_LIBRARY GTEST_LIBRARY_DEBUG GTEST_MAIN_LIBRARY GTEST_MAIN_LIBRARY_DEBUG)
+
+    set(GTEST_FOUND ${GTEST_FOUND} PARENT_SCOPE)
 
     concrete_export_package_manager_path(googletest)
 

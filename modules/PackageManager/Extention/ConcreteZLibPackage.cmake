@@ -25,7 +25,7 @@ function(concrete_package_zip)
     set(options)
 
     set(singleValueKey
-        VERSION
+        VERSION NAME
         )
 
     set(mulitValueKey ZLIB_FIND_PACKAGE_ARGUMENTS CONFIGURE_TYPE)
@@ -37,6 +37,12 @@ function(concrete_package_zip)
         "${mulitValueKey}"
         ${ARGN}
     )
+
+    if (_CONCRETE_ZLIB_NAME)
+        set(name ${_CONCRETE_ZLIB_NAME})
+    else()
+        set(name zip)
+    endif()
 
     if (_CONCRETE_ZLIB_CONFIGURE_TYPE)
         set(buildOptions CMAKE_STANDARD_BUILD_OPTIONS)
@@ -52,11 +58,11 @@ function(concrete_package_zip)
     set(cmakeBuildOptions ${buildOptions} ${configureType})
 
     concrete_package(
-        zip
+        ${name}
 
         VERSION ${targetPackageVersion}
 
-        PACKAGES "ZLib"
+        PACKAGES "ZLIB"
 
         FETCH_PACKAGE_ARGUMENTS
             DOWNLOAD_BUILD_STEP_OPTIONS
@@ -73,8 +79,9 @@ function(concrete_package_zip)
             ${_CONCRETE_ZLIB_ZLIB_FIND_PACKAGE_ARGUMENTS}
     )
 
-    set(ZLib_FOUND ${ZLib_FOUND} PARENT_SCOPE)
+    concrete_clear_moudule_cache(ZLIB_INCLUDE_DIR ZLIB_LIBRARY_DEBUG ZLIB_LIBRARY_RELEASE)
+
+    set(ZLIB_FOUND ${ZLIB_FOUND} PARENT_SCOPE)
 
     concrete_export_package_manager_path(zip)
-
 endfunction(concrete_package_zip)
