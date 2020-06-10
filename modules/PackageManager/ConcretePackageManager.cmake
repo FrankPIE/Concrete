@@ -351,9 +351,9 @@ function(__concrete_cmake_standard_commands CommandsOutput)
     endif()
 
     if (NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED})
-    if (EXISTS ${buildDir}/CMakeCache.txt)
-        concrete_remove_file(FILES ${buildDir}/CMakeCache.txt)
-    endif()
+        if (EXISTS ${buildDir}/CMakeCache.txt)
+            concrete_remove_file(FILES ${buildDir}/CMakeCache.txt)
+        endif()
     endif()
 
     set(generatorCommand "COMMANDS ${CMAKE_COMMAND} ")
@@ -403,6 +403,8 @@ function(__concrete_cmake_standard_commands CommandsOutput)
     endif()
 
     string(APPEND generatorCommand "${rootDir} WORKING_DIRECTORY ${buildDir}")
+
+    concrete_debug("${generatorCommand}")
 
     list(APPEND commands ${generatorCommand})
 
@@ -566,8 +568,10 @@ function(concrete_package PACKAGE_NAME)
         ${ARGN}
     )
 
-    if (_PACKAGES)
-        foreach(var ${_PACKAGES})
+    concrete_debug("${__PACKAGES}")
+
+    if (__PACKAGES)
+        foreach(var ${__PACKAGES})
             string(TOUPPER ${var} ucPackage)
             set(mulitValueKey ${mulitValueKey} ${ucPackage}_FIND_PACKAGE_ARGUMENTS)
         endforeach()
