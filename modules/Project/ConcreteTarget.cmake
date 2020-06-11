@@ -23,8 +23,8 @@ include_guard(GLOBAL)
 
 function(concrete_target)
     set(options CREATE_ONLY IMPORTED IMPORTED_GLOBAL EXCLUDE_FROM_ALL)
-    set(singleValueKey TARGET_NAME TYPE ALIAS_TARGET UNITY_BUILD)
-    set(mulitValueKey PROPERTIES LINK_DIRECTORIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_DEFINITIONS SOURCES)
+    set(singleValueKey TARGET_NAME TYPE ALIAS_TARGET UNITY_BUILD FOLDER)
+    set(mulitValueKey IMPORTED_CONFIGURATIONS PROPERTIES LINK_DIRECTORIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_DEFINITIONS SOURCES)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -40,12 +40,19 @@ function(concrete_target)
         concrete_error("must set target name")
     endif(_CONCRETE_TARGET_NAME)
 
+    set(cotireBuild 1)
+    set(onlyInteface OFF)
+    set(isImported OFF)
+
     if(${_CONCRETE_IMPORTED})
         set(imported IMPORTED)
+        set(isImported ON)
 
         if(${_CONCRETE_IMPORTED_GLOBAL})
             LIST(APPEND imported GLOBAL)
         endif(${_CONCRETE_IMPORTED_GLOBAL})
+
+        set(onlyInteface ON)
 
         set(importedOrSources ${imported})
     else()
@@ -59,9 +66,6 @@ function(concrete_target)
             set(excludeFromAll EXCLUDE_FROM_ALL)
         endif(${_CONCRETE_EXCLUDE_FROM_ALL})
     endif(${_CONCRETE_IMPORTED})
-
-    set(cotireBuild 1)
-    set(onlyInteface OFF)
 
     if(_CONCRETE_TYPE)
         if(${_CONCRETE_TYPE} STREQUAL "Interface")
@@ -105,6 +109,12 @@ function(concrete_target)
         concrete_error("target must have type")
     endif(_CONCRETE_TYPE)
 
+    if (${isImported})
+        if (_CONCRETE_IMPORTED_CONFIGURATIONS)
+            set_property(TARGET ${targetName} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${_CONCRETE_IMPORTED_CONFIGURATIONS})
+        endif()
+    endif()
+
     if(DEFINED _CONCRETE_UNITY_BUILD)
         set_property(TARGET ${targetName} PROPERTY USE_UNITY_BUILD ${_CONCRETE_UNITY_BUILD})
     endif(DEFINED _CONCRETE_UNITY_BUILD)
@@ -140,11 +150,11 @@ function(concrete_target)
     else()
         set(concreteInterfaceKeyWord PRIVATE)
     endif(${onlyInteface})
-
+    
     if(_CONCRETE_LINK_LIBRARIES)
-        target_link_libraries(${targetName} ${concreteInterfaceKeyWord} $<TARGET_NAME:ConcreteInterface> ${_CONCRETE_LINK_LIBRARIES})
+        target_link_libraries(${targetName} ${concreteInterfaceKeyWord} $<$<NOT:$<BOOL:${isImported}>>:$<TARGET_NAME:ConcreteInterface>> ${_CONCRETE_LINK_LIBRARIES})
     else()
-        target_link_libraries(${targetName} ${concreteInterfaceKeyWord} $<TARGET_NAME:ConcreteInterface>)
+        target_link_libraries(${targetName} ${concreteInterfaceKeyWord} $<$<NOT:$<BOOL:${isImported}>>:$<TARGET_NAME:ConcreteInterface>>)
     endif(_CONCRETE_LINK_LIBRARIES)
 
     if(_CONCRETE_INCLUDE_DIRECTORIES)
@@ -162,4 +172,12 @@ function(concrete_target)
     if(${cotireBuild} AND ${useUnityBuild})
         cotire(${targetName})
     endif(${cotireBuild} AND ${useUnityBuild})
+
+    if (_CONCRETE_FOLDER)
+        set(folderName ${_CONCRETE_FOLDER})
+
+        if(NOT ${folderName} STREQUAL "")
+            set_property(TARGET ${targetName} PROPERTY FOLDER "${folderName}")
+        endif(NOT ${folderName} STREQUAL "")
+    endif(_CONCRETE_FOLDER)
 endfunction(concrete_target)
