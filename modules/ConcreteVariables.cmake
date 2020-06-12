@@ -106,6 +106,9 @@ set(CONCRETE_PROJECT_HOMEPAGE_URL CACHE INTERNAL "project homepage url" FORCE)
 # compiler target
 set(CONCRETE_PROJECT_COMPILER_TARGET CACHE INTERNAL "project compiler target" FORCE)
 
+# compiler toolset
+set(CONCRETE_GENERATOR_TOOLSET CACHE INTERNAL "porject generator toolset" FORCE)
+
 # project version
 set(CONCRETE_PROJECT_SOFTWARE_VERSION CACHE INTERNAL "software version" FORCE)
 

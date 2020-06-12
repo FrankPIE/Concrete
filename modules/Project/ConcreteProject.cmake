@@ -58,6 +58,22 @@ function(concrete_check_compiler_target)
     # end set compiler target
 endfunction(concrete_check_compiler_target)
 
+function(concrete_generator_toolset)
+    set(toolset ${CMAKE_GENERATOR_TOOLSET})
+
+    if ("_${toolset}" STREQUAL "_")
+        set(toolset ${CMAKE_GENERATOR})
+    endif()
+
+    if ("${toolset}" STREQUAL "Visual Studio 16 2019" OR "${toolset}" STREQUAL "vc142")
+        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "msvc142")
+    elseif("${toolset}" STREQUAL "Visual Studio 15 2017" OR "${toolset}" STREQUAL "vc141")
+        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "msvc141")
+    elseif("${toolset}" STREQUAL "Visual Studio 14 2015" OR "${toolset}" STREQUAL "vc140")
+        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "msvc140")
+    endif()
+endfunction(concrete_generator_toolset)
+
 # https://bitbucket.org/ignitionrobotics/ign-cmake/issues/7/the-top-level-cmakeliststxt-file-for-a
 macro(concrete_project)         
     set(options 
@@ -161,6 +177,9 @@ macro(concrete_project)
 
     # check compiler target
     concrete_check_compiler_target()
+
+    # generator toolset
+    concrete_generator_toolset()
 
     if(_CONCRETE_PROJECT_ROOT_DIR)
         set_property(CACHE CONCRETE_PROJECT_ROOT_DIRECTORY PROPERTY VALUE ${_CONCRETE_PROJECT_ROOT_DIR})
