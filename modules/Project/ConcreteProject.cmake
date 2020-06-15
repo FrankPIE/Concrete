@@ -59,23 +59,29 @@ function(concrete_check_compiler_target)
 endfunction(concrete_check_compiler_target)
 
 function(concrete_generator_toolset)
-    set(toolset ${CMAKE_GENERATOR_TOOLSET})
-
-    if ("_${toolset}" STREQUAL "_")
-        set(toolset ${CMAKE_GENERATOR})
+    if (MSVC)
+        set(toolset ${CMAKE_VS_PLATFORM_TOOLSET})            
     endif()
 
-    if ("${toolset}" STREQUAL "Visual Studio 16 2019" OR "${toolset}" STREQUAL "vc142")
-        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "msvc142")
-    elseif("${toolset}" STREQUAL "Visual Studio 15 2017" OR "${toolset}" STREQUAL "vc141")
-        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "msvc141")
-    elseif("${toolset}" STREQUAL "Visual Studio 14 2015" OR "${toolset}" STREQUAL "vc140")
-        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "msvc140")
+    if ("_${toolset}" STREQUAL "_")
+        set(toolset ${CMAKE_GENERATOR_TOOLSET})
+
+        if ("_${toolset}" STREQUAL "_")
+            set(toolset ${CMAKE_GENERATOR})
+        endif()        
+    endif()
+
+    if ("${toolset}" STREQUAL "Visual Studio 16 2019" OR "${toolset}" STREQUAL "v142")
+        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "v142")
+    elseif("${toolset}" STREQUAL "Visual Studio 15 2017" OR "${toolset}" STREQUAL "v141")
+        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "v141")
+    elseif("${toolset}" STREQUAL "Visual Studio 14 2015" OR "${toolset}" STREQUAL "v140")
+        set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "v140")
     endif()
 endfunction(concrete_generator_toolset)
 
 # https://bitbucket.org/ignitionrobotics/ign-cmake/issues/7/the-top-level-cmakeliststxt-file-for-a
-macro(concrete_project)         
+macro(concrete_project PROJECT_NAME)         
     set(options 
         WITH_COMPILER_TARGET_POSTFIX 
     )
@@ -98,11 +104,7 @@ macro(concrete_project)
     )
 
     # begin set project
-    if(_CONCRETE_PROJECT_NAME)
-        set_property(CACHE CONCRETE_PROJECT_NAME PROPERTY VALUE ${_CONCRETE_PROJECT_NAME})
-    else()
-        concrete_error("Project name must be set")
-    endif()
+    set_property(CACHE CONCRETE_PROJECT_NAME PROPERTY VALUE ${PROJECT_NAME})
 
     if (_CONCRETE_PROJECT_LANGUAGES)
         foreach(var ${_CONCRETE_PROJECT_LANGUAGES})
@@ -148,9 +150,15 @@ macro(concrete_project)
             set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}.${CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK}")
         endif(${versionListLength} GREATER 3)
 
-        if(NOT ${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
-            list(APPEND projectParameterList VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION})
-        endif(NOT ${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
+        if(${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR PROPERTY VALUE 0)
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR PROPERTY VALUE 0)
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH PROPERTY VALUE 1)
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK PROPERTY VALUE 0)
+            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "0.0.1.0")
+        endif()
+
+        list(APPEND projectParameterList VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION})
     endif(_CONCRETE_PROJECT_VERSION)
 
     if (_CONCRETE_PROJECT_DESCRIPTION)
@@ -263,10 +271,11 @@ macro(concrete_project)
         for as properties interface for other target
     #]]
     concrete_target(
-        TARGET_NAME 
-            ConcreteInterface
+        ConcreteInterface
+        
         TYPE        
             "Interface"
+
         CREATE_ONLY
     )
     

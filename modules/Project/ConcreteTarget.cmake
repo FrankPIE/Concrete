@@ -21,9 +21,9 @@
 
 include_guard(GLOBAL)
 
-function(concrete_target)
+function(concrete_target TARGET_NAME)
     set(options CREATE_ONLY IMPORTED IMPORTED_GLOBAL EXCLUDE_FROM_ALL)
-    set(singleValueKey TARGET_NAME TYPE ALIAS_TARGET UNITY_BUILD FOLDER)
+    set(singleValueKey TYPE ALIAS_TARGET UNITY_BUILD FOLDER)
     set(mulitValueKey IMPORTED_CONFIGURATIONS PROPERTIES LINK_DIRECTORIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_DEFINITIONS SOURCES)
 
     CMAKE_PARSE_ARGUMENTS(
@@ -34,11 +34,9 @@ function(concrete_target)
         ${ARGN}
     )
 
-    if(_CONCRETE_TARGET_NAME)
-        set(targetName ${_CONCRETE_TARGET_NAME})
-    else()
-        concrete_error("must set target name")
-    endif(_CONCRETE_TARGET_NAME)
+    set(targetName ${TARGET_NAME})
+
+    concrete_debug(${targetName})
 
     set(cotireBuild 1)
     set(onlyInteface OFF)
