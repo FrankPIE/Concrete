@@ -561,7 +561,7 @@ function(concrete_package PACKAGE_NAME)
 
     set(singleValueKey PACKAGE_ROOT VERSION)
 
-    set(mulitValueKey PACKAGES DEPEND_PACKAGES_PATH FIND_PACKAGE_ARGUMENTS FETCH_PACKAGE_ARGUMENTS)
+    set(mulitValueKey CONFIG_HINTS PACKAGES DEPEND_PACKAGES_PATH FIND_PACKAGE_ARGUMENTS FETCH_PACKAGE_ARGUMENTS)
 
     CMAKE_PARSE_ARGUMENTS(
         _ "${options}" "${singleValueKey}" "${mulitValueKey}"
@@ -612,6 +612,14 @@ function(concrete_package PACKAGE_NAME)
 
     __concrete_fecth_package(${PACKAGE_NAME} ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS})
 
+    if(_CONCRETE_CONFIG_HINTS)
+        foreach(var ${CMAKE_PREFIX_PATH})
+            foreach(hint ${_CONCRETE_CONFIG_HINTS})
+                list(APPEND CMAKE_PREFIX_PATH ${var}${hint})                
+            endforeach()
+        endforeach()
+    endif()
+    
     if (_CONCRETE_PACKAGES)
         foreach(var ${_CONCRETE_PACKAGES})
             string(TOUPPER ${var} ucPackage)
