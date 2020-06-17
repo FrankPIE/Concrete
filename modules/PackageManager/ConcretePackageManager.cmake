@@ -613,9 +613,12 @@ function(concrete_package PACKAGE_NAME)
     __concrete_fecth_package(${PACKAGE_NAME} ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS})
 
     if(_CONCRETE_CONFIG_HINTS)
+        concrete_debug("Hint: ${_CONCRETE_CONFIG_HINTS}")
         foreach(var ${CMAKE_PREFIX_PATH})
             foreach(hint ${_CONCRETE_CONFIG_HINTS})
-                list(APPEND CMAKE_PREFIX_PATH ${var}${hint})                
+                list(APPEND CMAKE_PREFIX_PATH ${var}${hint}) 
+                
+                concrete_debug("${var}${hint}")
             endforeach()
         endforeach()
     endif()
