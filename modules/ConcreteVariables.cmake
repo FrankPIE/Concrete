@@ -97,6 +97,15 @@ set(CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY CACHE PATH "global library files g
 # project name
 set(CONCRETE_PROJECT_NAME CACHE INTERNAL "project name" FORCE)
 
+# package name
+set(CONCRETE_PACKAGE_NAME CACHE INTERNAL "package name" FORCE)
+
+# export target name
+set(CONCRETE_EXPORT_NAME CACHE INTERNAL "export target name" FORCE)
+
+# export target namespace
+set(CONCRETE_EXPORT_NAMESPACE CACHE INTERNAL "export target namespace" FORCE)
+
 # project decription
 set(CONCRETE_PROJECT_DESCRIPTION CACHE INTERNAL "project description" FORCE)
 
@@ -123,3 +132,4 @@ set(CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH CACHE INTERNAL "software version pat
 
 # project version tweak
 set(CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK CACHE INTERNAL "software version tweak" FORCE)
+

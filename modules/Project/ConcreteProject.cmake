@@ -87,7 +87,7 @@ macro(concrete_project PROJECT_NAME)
     )
 
     set(singleValueKey 
-        NAME DESCRIPTION HOMEPAGE_URL 
+        NAME DESCRIPTION HOMEPAGE_URL PACKAGE_NAME
         ROOT_DIR BINARY_OUTPUT_DIR LIBRARY_OUTPUT_DIR
     )
     
@@ -105,6 +105,16 @@ macro(concrete_project PROJECT_NAME)
 
     # begin set project
     set_property(CACHE CONCRETE_PROJECT_NAME PROPERTY VALUE ${PROJECT_NAME})
+
+    if (_CONCRETE_PROJECT_PACKAGE_NAME)
+        set(packageName ${_CONCRETE_PROJECT_PACKAGE_NAME})
+    else()
+        set(packageName ${CONCRETE_PROJECT_NAME})
+    endif()
+
+    set_property(CACHE CONCRETE_PACKAGE_NAME PROPERTY VALUE ${packageName})
+    set_property(CACHE CONCRETE_EXPORT_NAME PROPERTY VALUE ${packageName}Targets)
+    set_property(CACHE CONCRETE_EXPORT_NAMESPACE PROPERTY VALUE ${packageName}::)
 
     if (_CONCRETE_PROJECT_LANGUAGES)
         foreach(var ${_CONCRETE_PROJECT_LANGUAGES})
@@ -278,6 +288,11 @@ macro(concrete_project PROJECT_NAME)
 
         CREATE_ONLY
     )
+
+    concrete_install(
+        TARGETS ConcreteInterface 
+        DEFAULT_EXPORT
+    )
     
     __concrete_clear_cache()
 endmacro(concrete_project)
@@ -413,126 +428,6 @@ function(concrete_configure_file)
         NEWLINE_STYLE ${newlineStyle}
     )
 endfunction(concrete_configure_file)
-
-# function(CONCRETE_METHOD_SET_GLOBAL_COMPILE_OPTIONS_AND_DEFINITIONS)
-    # set(options APPEND WITHOUT_DEBUG USE_UNICODE WARNING_AS_ERROR)
-    # set(singleValueKey BUILD_TYPE LANGUAGE_OR_LINKER COPY_FROM_TYPE WARNING_LEVEL DEBUG_INFO_FORMAT)
-    # set(mulitValueKey)
-    
-    # CMAKE_PARSE_ARGUMENTS(
-    #     _CONCRETE
-    #     "${options}"
-    #     "${singleValueKey}"
-    #     "${mulitValueKey}"
-    #     ${ARGN}
-    # )
-
-#     if(NOT _CONCRETE_BUILD_TYPE)
-#         concrete_error("Build type must be set")
-#     endif(NOT _CONCRETE_BUILD_TYPE)
-
-#     if (NOT _CONCRETE_LANGUAGE_OR_LINKER)
-#         concrete_error("language or linker must be set")
-#     endif(NOT _CONCRETE_LANGUAGE_OR_LINKER)
-
-#     set(flagName)
-#     if(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
-#         if (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#             set(flagName CMAKE_EXE_LINKER_FLAGS)
-#         else()
-#             set(language)
-#             STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
-#             set(flagName CMAKE_${language}_FLAGS)
-#         endif(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#     else()
-#         set(buildType)
-#         STRING(TOUPPER "${_CONCRETE_BUILD_TYPE}" buildType)
-
-#         if (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#             set(flagName CMAKE_EXE_LINKER_FLAGS_${buildType})
-#         else()
-#             set(language)
-#             STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
-#             set(flagName CMAKE_${language}_FLAGS_${buildType})
-#         endif(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#     endif(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
-
-#     if(NOT DEFINED ${flagName})
-#         concrete_error("cache variable flag can not find")
-#     endif(NOT DEFINED ${flagName})
-
-#     set(flagCopyFrom)
-#     if(_CONCRETE_COPY_FROM_TYPE)
-#         if(${_CONCRETE_COPY_FROM_TYPE} STREQUAL "ALL_BUILD")
-#             if (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#                 set(flagCopyFrom CMAKE_EXE_LINKER_FLAGS)
-#             else()
-#                 set(language)
-#                 STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
-#                 set(flagCopyFrom CMAKE_${language}_FLAGS)
-#             endif(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#         else()
-#             set(buildType)
-#             STRING(TOUPPER "${_CONCRETE_COPY_FROM_TYPE}" buildType)
-
-#             if (${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#                 set(flagCopyFrom CMAKE_EXE_LINKER_FLAGS_${buildType})
-#             else()
-#                 set(language)
-#                 STRING(TOUPPER "${_CONCRETE_LANGUAGE_OR_LINKER}" language)
-#                 set(flagCopyFrom CMAKE_${language}_FLAGS_${buildType})
-#             endif(${_CONCRETE_LANGUAGE_OR_LINKER} STREQUAL "Linker")
-#         endif(${_CONCRETE_BUILD_TYPE} STREQUAL "ALL_BUILD")
-
-#         if(NOT DEFINED ${flagCopyFrom})
-#             concrete_error("Copy source not exists")
-#         else()
-#             set_property(CACHE ${flagName} PROPERTY VALUE "${${flagCopyFrom}}")
-
-#             RETURN()
-#         endif(NOT DEFINED ${flagCopyFrom})
-#     endif(_CONCRETE_COPY_FROM_TYPE)
-
-#     set(length)
-#     set(flags "")
-#     if(${_CONCRETE_APPEND})
-#         set(flags "${${flagName}}")
-        
-#         STRING(LENGTH "${flags}" length)
-#         if(NOT ${length} EQUAL 0)
-#             STRING(APPEND flags " ")
-#         endif(NOT ${length} EQUAL 0)
-#     endif(${_CONCRETE_APPEND})
-
-#     if(${_CONCRETE_WITHOUT_DEBUG})
-#         CONCRETE_INTERNAL_METHOD_ADD_NDEBUG_FLAG(flags)
-#     endif(${_CONCRETE_WITHOUT_DEBUG})
-
-#     if (${_CONCRETE_WARNING_AS_ERROR})
-#         CONCRETE_INTERNAL_METHOD_ADD_WARNING_AS_ERROR_FLAG(flags)
-#     endif(${_CONCRETE_WARNING_AS_ERROR})
-
-#     if(${_CONCRETE_USE_UNICODE})
-#         CONCRETE_INTERNAL_METHOD_ADD_UNICODE_FLAG(flags)
-#     endif(${_CONCRETE_USE_UNICODE})
-
-#     if(_CONCRETE_WARNING_LEVEL)
-#         CONCRETE_INTERNAL_METHOD_ADD_WARNING_LEVEL_FLAG(flags ${_CONCRETE_WARNING_LEVEL})
-#     endif(_CONCRETE_WARNING_LEVEL)
-
-#     if (_CONCRETE_DEBUG_INFO_FORMAT)
-#         CONCRETE_INTERNAL_METHOD_ADD_DEBUG_INFO_FORMAT(flags ${_CONCRETE_DEBUG_INFO_FORMAT})
-#     endif(_CONCRETE_DEBUG_INFO_FORMAT)
-
-#     STRING(LENGTH "${flags}" length)
-
-#     if(NOT ${length} EQUAL 0)
-#         # pop last space char
-#         CONCRETE_METHOD_STRING_POP_LAST(flags 1 flags)
-
-#         set_property(CACHE ${flagName} PROPERTY VALUE "${flags}")
-#     endif(NOT ${length} EQUAL 0)
-# endfunction(CONCRETE_METHOD_SET_GLOBAL_COMPILE_OPTIONS_AND_DEFINITIONS)
 
 function(concrete_set_global_properties)
     set(options)

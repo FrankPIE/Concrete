@@ -45,6 +45,7 @@ include( Project/ConcreteSource )
 include( Project/ConcreteExtensionUnityBuild)
 include( Project/ConcreteTarget )
 include( Project/ConcreteDirectory )
+include( Project/ConcreteInstall )
 include( Project/ConcreteProject )
 
 # Concrete Package Manager
