@@ -300,7 +300,7 @@ endmacro(concrete_project)
 function(concrete_global_target_configure)
     set(options)
     set(singleValueKey)
-    set(mulitValueKey PROPERTIES LINK_DIRECTORIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_DEFINITIONS SOURCES)
+    set(mulitValueKey PROPERTIES LINK_DIRECTORIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_FEATURES COMPILE_DEFINITIONS SOURCES)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -315,35 +315,39 @@ function(concrete_global_target_configure)
     # TODO::参数检查
 
     if(_CONCRETE_PROPERTIES)
-        SET_TARGET_PROPERTIES(${targetName} PROPERTIES ${_CONCRETE_PROPERTIES})
+        set_target_properties(${targetName} PROPERTIES ${_CONCRETE_PROPERTIES})
     endif(_CONCRETE_PROPERTIES)
 
     if(_CONCRETE_LINK_OPTIONS)
-        TARGET_LINK_OPTIONS(${targetName} INTERFACE ${_CONCRETE_LINK_OPTIONS})
+        target_link_options(${targetName} INTERFACE ${_CONCRETE_LINK_OPTIONS})
     endif(_CONCRETE_LINK_OPTIONS)
 
     if(_CONCRETE_LINK_DIRECTORIES)
-        TARGET_LINK_DIRECTORIES(${targetName} INTERFACE ${_CONCRETE_INCLUDE_DIRECTORIES})
+        target_link_directories(${targetName} INTERFACE ${_CONCRETE_INCLUDE_DIRECTORIES})
     endif(_CONCRETE_LINK_DIRECTORIES)
 
     if(_CONCRETE_LINK_LIBRARIES)
-        TARGET_LINK_LIBRARIES(${targetName} INTERFACE ${_CONCRETE_LINK_LIBRARIES})
+        target_link_libraries(${targetName} INTERFACE ${_CONCRETE_LINK_LIBRARIES})
     endif(_CONCRETE_LINK_LIBRARIES)
 
     if(_CONCRETE_INCLUDE_DIRECTORIES)
-        TARGET_INCLUDE_DIRECTORIES(${targetName} INTERFACE ${_CONCRETE_INCLUDE_DIRECTORIES})
+        target_include_directories(${targetName} INTERFACE ${_CONCRETE_INCLUDE_DIRECTORIES})
     endif(_CONCRETE_INCLUDE_DIRECTORIES)
 
     if(_CONCRETE_COMPILE_OPTIONS)
-        TARGET_COMPILE_OPTIONS(${targetName} INTERFACE ${_CONCRETE_COMPILE_OPTIONS})
+        target_compile_options(${targetName} INTERFACE ${_CONCRETE_COMPILE_OPTIONS})
     endif(_CONCRETE_COMPILE_OPTIONS)
 
     if(_CONCRETE_COMPILE_DEFINITIONS)
-        TARGET_COMPILE_DEFINITIONS(${targetName} INTERFACE ${_CONCRETE_COMPILE_DEFINITIONS})
+        target_compile_definitions(${targetName} INTERFACE ${_CONCRETE_COMPILE_DEFINITIONS})
     endif(_CONCRETE_COMPILE_DEFINITIONS)
+    
+    if (_CONCRETE_COMPILE_FEATURES)
+        target_compile_features(${targetName} INTERFACE ${_CONCRETE_COMPILE_FEATURES})
+    endif()
 
     if(_CONCRETE_SOURCES)
-        TARGET_SOURCES(${targetName} INTERFACE ${_CONCRETE_SOURCES})
+        target_sources(${targetName} INTERFACE ${_CONCRETE_SOURCES})
     endif(_CONCRETE_SOURCES)
 endfunction(concrete_global_target_configure)
 

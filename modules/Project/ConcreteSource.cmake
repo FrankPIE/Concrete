@@ -90,10 +90,14 @@ function(concrete_source_directory_analyse PREFIX DIRECTORY)
 
     file(GLOB_RECURSE children LIST_DIRECTORIES false RELATIVE ${DIRECTORY} ${expressions})
 
+    concrete_debug("Directory: ${DIRECTORY}")
+
+    concrete_debug("Children: ${children}")
+
     foreach(child ${children})
-        GET_FILENAME_COMPONENT(dir  ${child} DIRECTORY)
-        GET_FILENAME_COMPONENT(file ${child} NAME)
-        GET_FILENAME_COMPONENT(ext  ${child} LAST_EXT)
+        get_filename_component(dir  ${child} DIRECTORY)
+        get_filename_component(file ${child} NAME)
+        get_filename_component(ext  ${child} LAST_EXT)
 
         if ("${dir}" STREQUAL "")
             set(dir "root")
@@ -119,7 +123,7 @@ function(concrete_source_directory_analyse PREFIX DIRECTORY)
 
         list(APPEND "${PREFIX}_ALL_SOURCES" "${sourceFile}")
 
-        if (NOT "${exts}" STREQUAL "")
+        if (NOT "_${exts}" STREQUAL "_")
             string(SUBSTRING ${ext} 1 -1 extName)
             string(TOUPPER ${extName} extName)
 
@@ -128,15 +132,15 @@ function(concrete_source_directory_analyse PREFIX DIRECTORY)
             list(APPEND "${PREFIX}_ALL_SOURCES_${extName}" "${sourceFile}")
 
             set("${PREFIX}_${dirName}_SOURCES_${extName}" "${${PREFIX}_${dirName}_SOURCES_${extName}}" PARENT_SCOPE)
-        endif(NOT "${exts}" STREQUAL "")
+        endif()
     endforeach(child ${children})
 
     set("${PREFIX}_ALL_SOURCES" "${${PREFIX}_ALL_SOURCES}" PARENT_SCOPE)
 
-    if (NOT "${exts}" STREQUAL "")
-        string(SUBSTRING ${ext} 1 -1 extName)
-        string(TOUPPER ${extName} extName)
-
-        set("${PREFIX}_ALL_SOURCES_${extName}" "${${PREFIX}_ALL_SOURCES_${extName}}" PARENT_SCOPE)
-    endif(NOT "${exts}" STREQUAL "")
+    if (NOT "_${exts}" STREQUAL "_")
+        foreach(var ${exts})
+            string(TOUPPER ${var} extName)        
+            set("${PREFIX}_ALL_SOURCES_${extName}" "${${PREFIX}_ALL_SOURCES_${extName}}" PARENT_SCOPE)
+        endforeach()
+    endif()
 endfunction(concrete_source_directory_analyse)
