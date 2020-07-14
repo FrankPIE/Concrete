@@ -370,11 +370,14 @@ function(concrete_configure_file)
         if(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
             concrete_error("Source file not exists")
         endif(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
-    endif(_CONCRETE_SOURCE_FILE_PATH)
+    endif()
 
     if(NOT _CONCRETE_DEST_FILE_PATH)
         concrete_error("Must set dest file path")
     endif(NOT _CONCRETE_DEST_FILE_PATH)
+
+    set(sourceFile ${_CONCRETE_SOURCE_FILE_PATH})
+    set(destFile ${_CONCRETE_DEST_FILE_PATH})
 
     if(${_CONCRETE_COPY_ONLY})
         if(_CONCRETE_NEWLINE_STYLE)
@@ -382,8 +385,8 @@ function(concrete_configure_file)
         endif(_CONCRETE_NEWLINE_STYLE)
 
         CONFIGURE_FILE(
-            ${SOURCE_FILE_PATH}
-            ${DEST_FILE_PATH}
+            ${sourceFile}
+            ${destFile}
             COPYONLY
         )
         RETURN()
@@ -392,23 +395,23 @@ function(concrete_configure_file)
     set(newlineStyle)
     if (_CONCRETE_NEWLINE_STYLE)
         if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "UNIX")
-            set(newlineStyle "UNIX") 
+            set(newlineStyle NEWLINE_STYLE "UNIX") 
         endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "UNIX")
 
         if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "DOS")
-            set(newlineStyle "DOS") 
+            set(newlineStyle NEWLINE_STYLE "DOS") 
         endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "DOS")        
 
         if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "WIN32")
-            set(newlineStyle "WIN32") 
+            set(newlineStyle NEWLINE_STYLE "WIN32") 
         endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "WIN32")        
 
         if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "LF")
-            set(newlineStyle "LF") 
+            set(newlineStyle NEWLINE_STYLE "LF") 
         endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "LF")        
 
         if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "CRLF")
-            set(newlineStyle "CRLF") 
+            set(newlineStyle NEWLINE_STYLE "CRLF") 
         endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "CRLF")        
     endif(_CONCRETE_NEWLINE_STYLE)
 
@@ -425,11 +428,11 @@ function(concrete_configure_file)
         endforeach(var ${_CONCRETE_COPY_OPTIONS})            
     endif(_CONCRETE_COPY_OPTIONS)
 
-    CONFIGURE_FILE(
-        ${SOURCE_FILE_PATH}
-        ${DEST_FILE_PATH}
+    configure_file(
+        ${sourceFile}
+        ${destFile}
         ${copyOptions}
-        NEWLINE_STYLE ${newlineStyle}
+        ${newlineStyle}
     )
 endfunction(concrete_configure_file)
 
