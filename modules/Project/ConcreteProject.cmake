@@ -283,8 +283,7 @@ macro(concrete_project PROJECT_NAME)
     concrete_target(
         ConcreteInterface
         
-        TYPE        
-            "Interface"
+        "Interface"
 
         CREATE_ONLY
     )
