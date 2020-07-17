@@ -207,6 +207,10 @@ function(concrete_package_boost)
         concrete_error("unsupport method")
     endif()
 
+    concrete_debug("${_CONCRETE_BOOST_FIND_PACKAGE_ARGUMENTS}")
+
+    set(Boost_NO_BOOST_CMAKE ON)
+
     concrete_package(
         boost
 
@@ -226,7 +230,7 @@ function(concrete_package_boost)
                     "COMMANDS b2 stage ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} toolset=${toolset}-${toolsetVersion} address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
                     "COMMANDS b2 install ${linkOptions} ${threadingOptions} ${runtimeLinkOptions} --prefix=PACKAGE_BINARY_DIR address-model=${addressModel} ${withBuild} ${withoutBuild} WORKING_DIRECTORY PACKAGE_SOURCE_DIR"
 
-        ${targetPackageName}_FIND_PACKAGE_ARGUMENTS
+        BOOST_FIND_PACKAGE_ARGUMENTS
             ${_CONCRETE_BOOST_FIND_PACKAGE_ARGUMENTS}
     )
 

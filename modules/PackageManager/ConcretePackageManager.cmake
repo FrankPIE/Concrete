@@ -628,6 +628,8 @@ function(concrete_package PACKAGE_NAME)
             string(TOUPPER ${var} ucPackage)
             find_package(${var} ${_CONCRETE_${ucPackage}_FIND_PACKAGE_ARGUMENTS})
 
+            concrete_debug("${CMAKE_CURRENT_LIST_LINE} : ${_CONCRETE_${ucPackage}_FIND_PACKAGE_ARGUMENTS}")
+
             set(${var}_FOUND ${${var}_FOUND} PARENT_SCOPE)
         endforeach()
     else()
