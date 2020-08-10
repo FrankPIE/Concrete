@@ -452,6 +452,8 @@ function(__concrete_download_and_build PACKAGE_NAME)
         ${ARGN}
     )
 
+    concrete_debug("fetch content argn : ${ARGN}")
+
     if (_CONCRETE_BUILD_TOOLSET)
         set(buildToolset ${_CONCRETE_BUILD_TOOLSET})
     else()
@@ -461,6 +463,7 @@ function(__concrete_download_and_build PACKAGE_NAME)
     set(packageName ${PACKAGE_NAME})
 
     if (_CONCRETE_DOWNLOAD_OPTIONS)
+        concrete_debug("download options : ${_CONCRETE_DOWNLOAD_OPTIONS}")
         __concrete_fecth_content(${packageName} ${_CONCRETE_DOWNLOAD_OPTIONS})
 
         string(TOLOWER ${packageName} lcPackageName)
@@ -545,6 +548,7 @@ function(__concrete_fecth_package PACKAGE_NAME)
         ${ARGN}
     )
 
+    concrete_debug("options : ${_CONCRETE_DOWNLOAD_BUILD_STEP_OPTIONS}")
     __concrete_download_and_build(${PACKAGE_NAME} ${_CONCRETE_DOWNLOAD_BUILD_STEP_OPTIONS})
 
     string(TOLOWER ${PACKAGE_NAME} lcPackageName)
@@ -609,6 +613,8 @@ function(concrete_package PACKAGE_NAME)
     if (_CONCRETE_DEPEND_PACKAGES_PATH)
         list(APPEND CMAKE_PREFIX_PATH ${_CONCRETE_DEPEND_PACKAGES_PATH})
     endif()
+
+    concrete_debug("ARGS : ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS}")
 
     __concrete_fecth_package(${PACKAGE_NAME} ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS})
 
