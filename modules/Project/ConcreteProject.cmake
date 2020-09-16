@@ -239,9 +239,8 @@ macro(concrete_project PROJECT_NAME)
     #[[ end set output dir ]] ########################################
 
     # begin set build types
-    set(buildTypes "")
     if(_CONCRETE_PROJECT_CONFIGURATION_TYPES)
-        GET_PROPERTY(languages GLOBAL PROPERTY ENABLED_LANGUAGES)
+        get_property(languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 
         foreach(var ${_CONCRETE_PROJECT_CONFIGURATION_TYPES})
             string(TOUPPER "${var}" upperValue)
@@ -266,12 +265,12 @@ macro(concrete_project PROJECT_NAME)
             set_property(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY HELPSTRING "configuration types")            
         else()
             if(NOT CMAKE_BUILD_TYPE)
-                set(CMAKE_BUILD_TYPE "${buildTypes}" CACHE STRING "" FORCE)
+                set(CMAKE_BUILD_TYPE "${_CONCRETE_PROJECT_CONFIGURATION_TYPES}" CACHE STRING "" FORCE)
             endif()
 
             set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
 
-            set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${buildTypes}")
+            set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${_CONCRETE_PROJECT_CONFIGURATION_TYPES}")
         endif(CMAKE_CONFIGURATION_TYPES)
     endif(_CONCRETE_PROJECT_CONFIGURATION_TYPES)
     # end set build types

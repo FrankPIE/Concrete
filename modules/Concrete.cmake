@@ -42,11 +42,12 @@ include( Environment/ConcreteDetectSystemInfo )
 
 # Concrete Project modules
 include( Project/ConcreteSource )
-include( Project/ConcreteExtensionUnityBuild)
+include( Project/ConcreteExtensionUnityBuild )
 include( Project/ConcreteTarget )
 include( Project/ConcreteDirectory )
 include( Project/ConcreteInstall )
 include( Project/ConcreteProject )
+include( Project/ConcreteBuildType )
 
 # Concrete Package Manager
 include( PackageManager/ConcretePackageManager )

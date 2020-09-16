@@ -181,3 +181,31 @@ function(concrete_target TARGET_NAME TYPE)
         endif(NOT ${folderName} STREQUAL "")
     endif(_CONCRETE_FOLDER)
 endfunction(concrete_target)
+
+function(concrete_map_configure TO FROM)
+    set(options)
+    set(singleValueKey)
+    set(mulitValueKey IMPORTED_TARGETS)
+
+    CMAKE_PARSE_ARGUMENTS(
+        _CONCRETE
+        "${options}"
+        "${singleValueKey}"
+        "${mulitValueKey}"
+        ${ARGN}
+    )
+
+    string(TOUPPER "${TO}" toUpperValue)
+
+    if (_CONCRETE_IMPORTED_TARGETS)
+        set(targets ${_CONCRETE_IMPORTED_TARGETS})
+
+        foreach(target ${targets})
+            if (NOT TARGET ${target})
+                continue()
+            endif()       
+            
+            set_target_properties(${target} PROPERTIES MAP_IMPORTED_CONFIG_${toUpperValue} ${FROM})            
+        endforeach(target ${targets})        
+    endif()
+endfunction(concrete_map_configure)
