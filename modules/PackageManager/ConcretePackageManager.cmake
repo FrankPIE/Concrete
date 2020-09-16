@@ -245,7 +245,7 @@ function(__concrete_fecth_content PACKAGE_NAME)
 endfunction(__concrete_fecth_content)
 
 function(__concrete_execute_build_process PACKAGE_NAME RESULT)
-    set(options DOWNLOAD_ONLY)
+    set(options)
 
     set(singleValueKey WORKING_DIRECTORY)
 
@@ -431,7 +431,7 @@ endfunction(__concrete_cmake_standard_commands)
 
 function(__concrete_download_and_build PACKAGE_NAME)
     set(options 
-        DOWNLOAD_ONLY          
+        FETCH_ONLY          
         )
 
     set(singleValueKey BUILD_TOOLSET)
@@ -483,9 +483,9 @@ function(__concrete_download_and_build PACKAGE_NAME)
                 set(CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED FALSE CACHE BOOL "${packageName} builded flag" FORCE)
             endif()
 
-            if (${_CONCRETE_DOWNLOAD_ONLY})
+            if (${_CONCRETE_FETCH_ONLY})
                 return()
-            endif(${_CONCRETE_DOWNLOAD_ONLY})
+            endif()
 
             if (NOT ${CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED}) 
                 # Build Step
@@ -561,7 +561,7 @@ function(__concrete_fecth_package PACKAGE_NAME)
 endfunction(__concrete_fecth_package)
 
 function(concrete_package PACKAGE_NAME)
-    set(options)
+    set(options DOWNLOAD_ONLY)
 
     set(singleValueKey PACKAGE_ROOT VERSION)
 
@@ -610,13 +610,25 @@ function(concrete_package PACKAGE_NAME)
         endif(${packageVersionDefined})
     endif(_CONCRETE_VERSION)
 
+    concrete_debug("ARGS : ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS}")
+
+    if (${_CONCRETE_DOWNLOAD_ONLY})
+        set(_CONCRETE_FETCH_PACKAGE_ARGUMENTS ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS} FETCH_ONLY)
+    endif()
+
+    __concrete_fecth_package(${PACKAGE_NAME} ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS})
+
+    string(TOLOWER ${PACKAGE_NAME} lcPackageName)
+    concrete_export_package_manager_path(${lcPackageName})
+
+    if (${_CONCRETE_DOWNLOAD_ONLY})
+        set_property(CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE TRUE) 
+        return()
+    endif()
+
     if (_CONCRETE_DEPEND_PACKAGES_PATH)
         list(APPEND CMAKE_PREFIX_PATH ${_CONCRETE_DEPEND_PACKAGES_PATH})
     endif()
-
-    concrete_debug("ARGS : ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS}")
-
-    __concrete_fecth_package(${PACKAGE_NAME} ${_CONCRETE_FETCH_PACKAGE_ARGUMENTS})
 
     if(_CONCRETE_CONFIG_HINTS)
         concrete_debug("Hint: ${_CONCRETE_CONFIG_HINTS}")
@@ -643,10 +655,6 @@ function(concrete_package PACKAGE_NAME)
 
         set(${PACKAGE_NAME}_FOUND ${${PACKAGE_NAME}_FOUND} PARENT_SCOPE)
     endif()
-
-    string(TOLOWER ${PACKAGE_NAME} lcPackageName)
-
-    concrete_export_package_manager_path(${lcPackageName})
 endfunction(concrete_package)
 
 function(concrete_set_package_manager_properties)
