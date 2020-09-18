@@ -22,7 +22,7 @@
 include_guard(GLOBAL)
 
 function(concrete_package_protobuf)
-    set(options)
+    set(options CONFIG)
 
     set(singleValueKey VERSION ZLIB_ROOT)
 
@@ -54,12 +54,21 @@ function(concrete_package_protobuf)
         "https://github.com/protocolbuffers/protobuf/releases/download/v${targetPackageVersion}/protobuf-cpp-${targetPackageVersion}.tar.gz"
     )
 
+    set(packageName Protobuf)
+
+    if (${_CONCRETE_PROTOBUF_CONFIG})
+        set(protobufConfig CONFIG_HINTS "/cmake")
+        set(packageName protobuf)
+
+        concrete_debug("protobuf hint : ${protobufConfig}")
+    endif()
+
     concrete_package(
         protobuf
     
         VERSION "${targetPackageVersion}"
     
-        PACKAGES Protobuf
+        PACKAGES ${packageName}
     
         FETCH_PACKAGE_ARGUMENTS
             DOWNLOAD_BUILD_STEP_OPTIONS
@@ -74,6 +83,8 @@ function(concrete_package_protobuf)
                     PACKAGE_TYPE url
                     LINKS ${links}
     
+        ${protobufConfig}
+
         DEPEND_PACKAGES_PATH ${zlibRootDir}
 
         PROTOBUF_FIND_PACKAGE_ARGUMENTS

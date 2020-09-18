@@ -630,8 +630,14 @@ function(concrete_package PACKAGE_NAME)
         list(APPEND CMAKE_PREFIX_PATH ${_CONCRETE_DEPEND_PACKAGES_PATH})
     endif()
 
+    set(mode MODULE)
     if(_CONCRETE_CONFIG_HINTS)
         concrete_debug("Hint: ${_CONCRETE_CONFIG_HINTS}")
+
+        if (NOT "_" STREQUAL "_${_CONCRETE_CONFIG_HINTS}")
+            set(mode CONFIG)
+        endif()
+
         foreach(var ${CMAKE_PREFIX_PATH})
             foreach(hint ${_CONCRETE_CONFIG_HINTS})
                 list(APPEND CMAKE_PREFIX_PATH ${var}${hint}) 
@@ -640,18 +646,20 @@ function(concrete_package PACKAGE_NAME)
             endforeach()
         endforeach()
     endif()
-    
+
+    concrete_debug("find mode: ${mode}")
+
     if (_CONCRETE_PACKAGES)
         foreach(var ${_CONCRETE_PACKAGES})
             string(TOUPPER ${var} ucPackage)
-            find_package(${var} ${_CONCRETE_${ucPackage}_FIND_PACKAGE_ARGUMENTS})
+            find_package(${var} ${mode} ${_CONCRETE_${ucPackage}_FIND_PACKAGE_ARGUMENTS})
 
             concrete_debug("${CMAKE_CURRENT_LIST_LINE} : ${_CONCRETE_${ucPackage}_FIND_PACKAGE_ARGUMENTS}")
 
             set(${var}_FOUND ${${var}_FOUND} PARENT_SCOPE)
         endforeach()
     else()
-        find_package(${PACKAGE_NAME} ${_CONCRETE_FIND_PACKAGE_ARGUMENTS})
+        find_package(${PACKAGE_NAME} ${mode} ${_CONCRETE_FIND_PACKAGE_ARGUMENTS})
 
         set(${PACKAGE_NAME}_FOUND ${${PACKAGE_NAME}_FOUND} PARENT_SCOPE)
     endif()
