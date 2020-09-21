@@ -32,6 +32,7 @@ function(concrete_package_opencv)
         WITHOUT_IPPICV
         WITHOUT_VTK
         DISABLE_CXX11
+        BUILD_STATIC
         )
 
     set(singleValueKey
@@ -101,6 +102,16 @@ function(concrete_package_opencv)
         list(APPEND cmakeArgs "-DWITH_VTK=OFF")
     endif()
 
+    if (${_CONCRETE_CV_BUILD_STATIC})
+        set(OpenCV_STATIC ON)
+        list(APPEND cmakeArgs "-DBUILD_SHARED_LIBS=OFF")
+    else()
+        set(OpenCV_STATIC OFF)
+        list(APPEND cmakeArgs "-DBUILD_SHARED_LIBS=ON")
+    endif()
+
+    concrete_debug("opencv cmake args : ${cmakeArgs}")
+
     concrete_package(
         opencv
 
@@ -120,6 +131,9 @@ function(concrete_package_opencv)
                     PACKAGE_TYPE git
                     REPOSITORY "https://github.com/opencv/opencv.git"
                     COMMIT_TAG "${targetPackageVersion}"
+
+        CONFIG_HINTS
+            "/"
 
         DEPEND_PACKAGES_PATH 
             ${_CONCRETE_CV_BLAS_ROOT}

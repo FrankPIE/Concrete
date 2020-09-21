@@ -300,9 +300,9 @@ function(__concrete_cmake_standard_commands CommandsOutput)
     set(options)
 
     set(singleValueKey ROOT_DIR INSTALL_DIR
-        CMAKE_GENERATOR CMAKE_GENERATOR_PLATFORM CMAKE_GENERATOR_TOOLSET CMAKE_SYSTEM_VERSION CMAKE_ARGS)  
+        CMAKE_GENERATOR CMAKE_GENERATOR_PLATFORM CMAKE_GENERATOR_TOOLSET CMAKE_SYSTEM_VERSION)  
 
-    set(mulitValueKey CMAKE_CONFIGURE_TYPES)
+    set(mulitValueKey CMAKE_CONFIGURE_TYPES CMAKE_ARGS)
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -396,15 +396,16 @@ function(__concrete_cmake_standard_commands CommandsOutput)
 
     string(APPEND generatorCommand "-DCMAKE_INSTALL_PREFIX=${installDir} ")
 
+    # bug::
     if (_CONCRETE_CMAKE_ARGS)
         foreach(var ${_CONCRETE_CMAKE_ARGS})
             string(APPEND generatorCommand "${var} ")
         endforeach()    
     endif()
 
-    string(APPEND generatorCommand "${rootDir} WORKING_DIRECTORY ${buildDir}")
+    concrete_debug("cmake generator command : ${generatorCommand}")
 
-    concrete_debug("${generatorCommand}")
+    string(APPEND generatorCommand "${rootDir} WORKING_DIRECTORY ${buildDir}")
 
     list(APPEND commands ${generatorCommand})
 
@@ -484,6 +485,8 @@ function(__concrete_download_and_build PACKAGE_NAME)
             endif()
 
             if (${_CONCRETE_FETCH_ONLY})
+                concrete_debug("fetch only package : ${packageName}")
+                set_property(CACHE CONCRETE_PACKAGE_MANAGER_${packageName}_BUILDED PROPERTY VALUE TRUE) 
                 return()
             endif()
 

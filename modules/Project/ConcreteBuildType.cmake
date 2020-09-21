@@ -52,8 +52,14 @@ function(concrete_build_type_copy TO FROM)
     endif()
 
     set_property(CACHE CMAKE_EXE_LINKER_FLAGS_${toUpperValue} PROPERTY VALUE "${CMAKE_EXE_LINKER_FLAGS_${fromUpperValue}}")
-    set_property(CACHE CMAKE_RC_FLAGS_${toUpperValue} PROPERTY VALUE "${CMAKE_RC_FLAGS_${fromUpperValue}}")    
-    set_property(CACHE CMAKE_SHARED_LINKER_FLAGS_${toUpperValue} PROPERTY VALUE "${CMAKE_SHARED_LINKER_FLAGS_${fromUpperValue}}")    
+
+    if (CMAKE_RC_FLAGS_${toUpperValue})
+        set_property(CACHE CMAKE_RC_FLAGS_${toUpperValue} PROPERTY VALUE "${CMAKE_RC_FLAGS_${fromUpperValue}}")        
+    endif()
+
+    if (CMAKE_SHARED_LINKER_FLAGS_${toUpperValue})
+        set_property(CACHE CMAKE_SHARED_LINKER_FLAGS_${toUpperValue} PROPERTY VALUE "${CMAKE_SHARED_LINKER_FLAGS_${fromUpperValue}}")    
+    endif()
 
     get_property(languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 
