@@ -22,7 +22,7 @@
 include_guard(GLOBAL)
 
 function(concrete_package_protobuf)
-    set(options CONFIG)
+    set(options CONFIG SHARED BUILD_TEST)
 
     set(singleValueKey VERSION ZLIB_ROOT)
 
@@ -63,6 +63,18 @@ function(concrete_package_protobuf)
         concrete_debug("protobuf hint : ${protobufConfig}")
     endif()
 
+    if(${_CONCRETE_PROTOBUF_SHARED})
+        list(APPEND cmakeArgs "-DBUILD_SHARED_LIBS=ON")
+    else()
+        list(APPEND cmakeArgs "-DBUILD_SHARED_LIBS=OFF")
+    endif()
+
+    if (${_CONCRETE_PROTOBUF_BUILD_TEST})
+        list(APPEND cmakeArgs "-Dprotobuf_BUILD_TESTS=ON")
+    else()
+        list(APPEND cmakeArgs "-Dprotobuf_BUILD_TESTS=OFF")
+    endif()
+
     concrete_package(
         protobuf
     
@@ -76,7 +88,7 @@ function(concrete_package_protobuf)
     
                 CMAKE_STANDARD_BUILD_OPTIONS
                     ROOT_DIR "PACKAGE_SOURCE_DIR/cmake"
-                    CMAKE_ARGS "-Dprotobuf_BUILD_TESTS=OFF"
+                    CMAKE_ARGS ${cmakeArgs}
                     ${configureType}
     
                 DOWNLOAD_OPTIONS
