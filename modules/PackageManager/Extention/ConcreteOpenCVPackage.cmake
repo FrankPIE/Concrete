@@ -33,6 +33,7 @@ function(concrete_package_opencv)
         WITHOUT_VTK
         DISABLE_CXX11
         BUILD_STATIC
+        BUILD_WORLD
         )
 
     set(singleValueKey
@@ -108,6 +109,12 @@ function(concrete_package_opencv)
     else()
         set(OpenCV_STATIC OFF)
         list(APPEND cmakeArgs "-DBUILD_SHARED_LIBS=ON")
+    endif()
+
+    if (${_CONCRETE_CV_BUILD_WORLD})
+        list(APPEND cmakeArgs "-DBUILD_opencv_world=ON")
+    else()
+        list(APPEND cmakeArgs "-DBUILD_opencv_world=OFF")
     endif()
 
     concrete_debug("opencv cmake args : ${cmakeArgs}")
