@@ -66,7 +66,8 @@ function(concrete_package_google_test)
 
                 DOWNLOAD_OPTIONS
                     PACKAGE_TYPE git
-                    REPOSITORY https://github.com/google/googletest.git
+                    REPOSITORY  "https://gitee.com/mirrors/googletest.git"
+                                "https://github.com/google/googletest.git"
                     COMMIT_TAG "release-${targetPackageVersion}"
             
         GTEST_FIND_PACKAGE_ARGUMENTS

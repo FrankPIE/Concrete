@@ -72,7 +72,8 @@ function(concrete_package_zip)
 
                 DOWNLOAD_OPTIONS
                     PACKAGE_TYPE git
-                    REPOSITORY https://github.com/madler/zlib.git
+                    REPOSITORY "https://gitee.com/mirrors/zlib.git" 
+                               "https://github.com/madler/zlib.git"
                     COMMIT_TAG "v${targetPackageVersion}"
 
         ZLIB_FIND_PACKAGE_ARGUMENTS

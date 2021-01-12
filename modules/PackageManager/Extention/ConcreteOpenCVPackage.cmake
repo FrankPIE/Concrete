@@ -136,7 +136,8 @@ function(concrete_package_opencv)
                 
                 DOWNLOAD_OPTIONS
                     PACKAGE_TYPE git
-                    REPOSITORY "https://github.com/opencv/opencv.git"
+                    REPOSITORY  "https://gitee.com/mirrors/opencv.git" 
+                                "https://github.com/opencv/opencv.git"
                     COMMIT_TAG "${targetPackageVersion}"
 
         CONFIG_HINTS
