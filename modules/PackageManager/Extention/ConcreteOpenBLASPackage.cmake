@@ -69,8 +69,9 @@ function(concrete_package_open_blas)
     
                 DOWNLOAD_OPTIONS
                     PACKAGE_TYPE git
-                    REPOSITORY   "https://gitee.com/mirrors/OpenBLAS.git"
-                                 "https://github.com/xianyi/OpenBLAS.git"
+                    REPOSITORY  "https://github.com/xianyi/OpenBLAS.git" 
+                                "https://gitee.com/mirrors/OpenBLAS.git"
+                                 
                     COMMIT_TAG   "v${targetPackageVersion}"
     
         DEPEND_PACKAGES_PATH ${pkgConfigRoot}
