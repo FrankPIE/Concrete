@@ -28,7 +28,7 @@ INCLUDE(Concrete)
 PROJECT(${CONCRETE_PROJECT_DEFAULT_PARAMETER})
 
 concrete_project(
-    NAME         Concrete
+    Concrete
     VERSION      1 0 0 0
     DESCRIPTION  "Concrete CMake Library"
     HOMEPAGE_URL "https://github.com/FrankPIE/Concrete.git"

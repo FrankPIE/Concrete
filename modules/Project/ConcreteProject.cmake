@@ -25,44 +25,67 @@ include( CMakeParseArguments )
 
 include( Project/Internal/ConcreteCheckLanguage )
 
+################## function start ############################
+### clear default project cache properties generate
+### we must use cmake project function at most first to generate some necessary variables,
+### but it will take some unnecessary variables at the same time, 
+### this function will clear those unnecessary variables.
 function(__concrete_clear_cache)
         # workaround for fix cache value
-        list(GET CONCRETE_PROJECT_DEFAULT_PARAMETER 0 tempName)
-        UNSET(${tempName}_BINARY_DIR CACHE)
-        UNSET(${tempName}_SOURCE_DIR CACHE)
+        # get default project name, as default is "__"
+        list(GET CONCRETE_PROJECT_DEFAULT_PARAMETER 0 defaultProjectName)
+
+        # ___BINARY_DIR and ___SOURCE_DIR variables as default
+        # will be generator by project function and clear by this function 
+        unset(${defaultProjectName}_BINARY_DIR CACHE)
+        unset(${defaultProjectName}_SOURCE_DIR CACHE)
         
+        # get all build configuration types, like Debug,Release,ect..
         if (CMAKE_CONFIGURATION_TYPES)
             set(buildTypes ${CMAKE_CONFIGURATION_TYPES})
         else()
             set(buildTypes ${CMAKE_BUILD_TYPE})
         endif(CMAKE_CONFIGURATION_TYPES)
 
+        # clear all build types flags cache
         foreach(var ${buildTypes})
             string(TOUPPER "${var}" upperValue)
 
             UNSET(CMAKE_NONE_FLAGS_${upperValue} CACHE)            
         endforeach(var ${buildTypes})
 
-        string(REPLACE "${tempName}" ${CONCRETE_PROJECT_NAME} value "${CMAKE_INSTALL_PREFIX}")
+        # CMAKE_INSTALL_PREFIX will use default project name as prefix, use user define project instead and set
+        string(REPLACE "${defaultProjectName}" ${CONCRETE_PROJECT_NAME} value "${CMAKE_INSTALL_PREFIX}")
         set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE ${value})    
 endfunction(__concrete_clear_cache)
+################## function end ############################
 
-function(concrete_check_compiler_target)
+################## function start ############################
+### get compiler target and set CONCRETE_PROJECT_COMPILER_TARGET property
+function(__concrete_check_compiler_target)
     # begin set compiler target
-    # set platform compiler target x86 or x64 or arm(not supported yet)    
-    if (CMAKE_CL_64)
+    # set platform compiler target x86 or x64 or arm(not supported yet)
+    # if CMAKE_CL_64 has defined, it must be x64
+    if (CMAKE_CL_64) 
         set_property(CACHE CONCRETE_PROJECT_COMPILER_TARGET PROPERTY VALUE x64)
     else()
         set_property(CACHE CONCRETE_PROJECT_COMPILER_TARGET PROPERTY VALUE x86)
     endif(CMAKE_CL_64)
     # end set compiler target
-endfunction(concrete_check_compiler_target)
+endfunction(__concrete_check_compiler_target)
+################## function end ############################
 
-function(concrete_generator_toolset)
+################## function start ############################
+### get compiler toolset and set CONCRETE_GENERATOR_TOOLSET property
+function(__concrete_generator_toolset)
+    # find CMAKE_VS_PLATFORM_TOOLSET value first
+    # only useful on microsoft visual c++ runtime
     if (MSVC)
         set(toolset ${CMAKE_VS_PLATFORM_TOOLSET})            
     endif()
 
+    # if toolset is empty, 
+    # find CMAKE_GENERATOR_TOOLSET or CMAKE_GENERATOR value to determine toolset value
     if ("_${toolset}" STREQUAL "_")
         set(toolset ${CMAKE_GENERATOR_TOOLSET})
 
@@ -71,6 +94,7 @@ function(concrete_generator_toolset)
         endif()        
     endif()
 
+    # set CONCRETE_GENERATOR_TOOLSET property value, only support vs2019, vs2017, vs2015 currently
     if ("${toolset}" STREQUAL "Visual Studio 16 2019" OR "${toolset}" STREQUAL "v142")
         set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "v142")
     elseif("${toolset}" STREQUAL "Visual Studio 15 2017" OR "${toolset}" STREQUAL "v141")
@@ -78,23 +102,36 @@ function(concrete_generator_toolset)
     elseif("${toolset}" STREQUAL "Visual Studio 14 2015" OR "${toolset}" STREQUAL "v140")
         set_property(CACHE CONCRETE_GENERATOR_TOOLSET PROPERTY VALUE "v140")
     endif()
-endfunction(concrete_generator_toolset)
+endfunction(__concrete_generator_toolset)
+################## function end ############################
 
-# https://bitbucket.org/ignitionrobotics/ign-cmake/issues/7/the-top-level-cmakeliststxt-file-for-a
-macro(concrete_project PROJECT_NAME)         
+################## function start ############################
+### https://bitbucket.org/ignitionrobotics/ign-cmake/issues/7/the-top-level-cmakeliststxt-file-for-a
+### use marco, make all variables at root directory scope
+macro(concrete_project PROJECT_NAME)
     set(options 
-        WITH_COMPILER_TARGET_POSTFIX 
+        # [obsolete, use USE_DEFAULT_POSTFIX]
+        # WITH_COMPILER_TARGET_POSTFIX 
+        USE_DEFAULT_FOLDER_POSTFIX # generate /${CONCRETE_PROJECT_COMPILER_TARGET} postfix, like bin/x86/Debug
     )
 
     set(singleValueKey 
-        NAME DESCRIPTION HOMEPAGE_URL PACKAGE_NAME
-        ROOT_DIR BINARY_OUTPUT_DIR LIBRARY_OUTPUT_DIR
+        DESCRIPTION         # project description, same as project description parameter
+        HOMEPAGE_URL        # project homepage
+        PACKAGE_NAME        # generate pacakage for other project to reference this project 
+        ROOT_DIR            # project root directory path
+        BINARY_OUTPUT_DIR   # dynamic binary file output directory path
+        LIBRARY_OUTPUT_DIR  # static binary file output directory path
+        FOLDER_POSTFIX      # user define floder postfix, like bin/${FOLDER_POSTFIX}/Debug
     )
     
     set(mulitValueKey 
-        VERSION CONFIGURATION_TYPES LANGUAGES
+        VERSION             # version, major, minor, patch, tweak
+        CONFIGURATION_TYPES # configuration types, like Debug, Release, etc...
+        LANGUAGES           # enable languages, like c cxx, visit this page for more support languages information https://cmake.org/cmake/help/latest/command/enable_language.html#command:enable_language
     )
 
+    # parser arguments
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE_PROJECT
         "${options}"
@@ -194,10 +231,10 @@ macro(concrete_project PROJECT_NAME)
     concrete_collect_system_information()
 
     # check compiler target
-    concrete_check_compiler_target()
+    __concrete_check_compiler_target()
 
     # generator toolset
-    concrete_generator_toolset()
+    __concrete_generator_toolset()
 
     if(_CONCRETE_PROJECT_ROOT_DIR)
         set_property(CACHE CONCRETE_PROJECT_ROOT_DIRECTORY PROPERTY VALUE ${_CONCRETE_PROJECT_ROOT_DIR})
@@ -214,9 +251,9 @@ macro(concrete_project PROJECT_NAME)
         set(runtimeOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/bin)
     endif(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
 
-    if (${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_POSTFIX})
+    if (${_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX})
         set(runtimeOutputDir ${runtimeOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    endif(${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_POSTFIX})
+    endif(${_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX})
 
     set_property(CACHE CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY PROPERTY VALUE ${runtimeOutputDir})
 
@@ -226,9 +263,9 @@ macro(concrete_project PROJECT_NAME)
         set(libraryOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/lib)
     endif(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
 
-    if (${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_POSTFIX})
+    if (${_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX})
         set(libraryOutputDir ${libraryOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    endif(${_CONCRETE_PROJECT_WITH_COMPILER_TARGET_POSTFIX})
+    endif(${_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX})
 
     set_property(CACHE CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY PROPERTY VALUE ${libraryOutputDir})
 

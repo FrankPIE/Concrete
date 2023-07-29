@@ -1,0 +1,17 @@
+{
+	"function-annotation-start": {
+		"prefix": "fas",
+		"body": [
+			"################## function start ############################"
+		],
+		"description": "add function start annotation"
+	}, 
+
+	"function-annotation-end": {
+		"prefix": "fae",
+		"body": [
+			"################## function end ############################"
+		],
+		"description": "add function end annotation"
+	}
+}
