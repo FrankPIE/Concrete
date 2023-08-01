@@ -23,6 +23,38 @@ include_guard(GLOBAL)
 
 include ( CMakePrintHelpers )
 
+function(concrete_status)
+    message(STATUS ${ARGN})
+endfunction(concrete_status)
+
+function(concrete_notice)
+    message(NOTICE ${ARGN})
+endfunction(concrete_notice)
+
+function(concrete_error)
+    message(FATAL_ERROR ${ARGN})
+endfunction(concrete_error)
+
+function(concrete_error_tip)
+    message(SEND_ERROR ${ARGN})    
+endfunction(concrete_error_tip)
+
+function(concrete_warning)
+    message(WARNING ${ARGN})    
+endfunction(concrete_warning)
+
+function(concrete_debug)
+    message(DEBUG ${ARGN})
+endfunction(concrete_debug)
+
+function(concrete_trace)
+    message(TRACE ${ARGN})
+endfunction(concrete_trace)
+
+function(concrete_verbose)
+    message(VERBOSE ${ARGN})
+endfunction(concrete_verbose)
+
 function(concrete_debug_print_variables)
     foreach(var ${ARGN})
        list(APPEND msg "${var}=\"${${var}}\"")

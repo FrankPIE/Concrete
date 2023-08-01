@@ -106,8 +106,17 @@ endfunction(__concrete_generator_toolset)
 ################## function end ############################
 
 ################## function start ############################
+### get cmake version
+function(__concrete_cmake_version VERSION)
+    set(${VERSION} "$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}" PARENT_SCOPE)    
+endfunction(__concrete_cmake_version)
+
+################## function end ############################
+
+################## function start ############################
 ### https://bitbucket.org/ignitionrobotics/ign-cmake/issues/7/the-top-level-cmakeliststxt-file-for-a
 ### use marco, make all variables at root directory scope
+### PROJECT_NAME : generate project name
 macro(concrete_project PROJECT_NAME)
     set(options 
         # [obsolete, use USE_DEFAULT_POSTFIX]
@@ -131,7 +140,7 @@ macro(concrete_project PROJECT_NAME)
         LANGUAGES           # enable languages, like c cxx, visit this page for more support languages information https://cmake.org/cmake/help/latest/command/enable_language.html#command:enable_language
     )
 
-    # parser arguments
+    ## parser arguments
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE_PROJECT
         "${options}"
@@ -140,26 +149,33 @@ macro(concrete_project PROJECT_NAME)
         ${ARGN}
     )
 
-    # begin set project
+    ## begin set project
+    # set project name into property CONCRETE_PROJECT_NAME
     set_property(CACHE CONCRETE_PROJECT_NAME PROPERTY VALUE ${PROJECT_NAME})
 
+    # set package name, if without given package name, use project name as default
     if (_CONCRETE_PROJECT_PACKAGE_NAME)
         set(packageName ${_CONCRETE_PROJECT_PACKAGE_NAME})
     else()
         set(packageName ${CONCRETE_PROJECT_NAME})
     endif()
 
+    # use package name to generate package relevant properties
     set_property(CACHE CONCRETE_PACKAGE_NAME PROPERTY VALUE ${packageName})
     set_property(CACHE CONCRETE_EXPORT_NAME PROPERTY VALUE ${packageName}Targets)
     set_property(CACHE CONCRETE_EXPORT_NAMESPACE PROPERTY VALUE ${packageName}::)
 
+    # languages check and make project parameters lanaguagas part
     if (_CONCRETE_PROJECT_LANGUAGES)
         foreach(var ${_CONCRETE_PROJECT_LANGUAGES})
             concrete_check_language_supported(${var} result)
             
             if(NOT ${result})
-                concrete_error("Not supported language ${var}")
+                concrete_error("not support ${var} language")
             endif(NOT ${result})
+
+            ## marco unset temp variable
+            unset(result)
         endforeach(var ${_CONCRETE_PROJECT_LANGUAGES})
 
         list(APPEND projectParameterList LANGUAGES ${_CONCRETE_PROJECT_LANGUAGES})
@@ -167,7 +183,7 @@ macro(concrete_project PROJECT_NAME)
         list(APPEND projectParameterList LANGUAGES C CXX)
     endif(_CONCRETE_PROJECT_LANGUAGES)
 
-    ####################################################################
+    # project version set
     if(_CONCRETE_PROJECT_VERSION)
         set(versionListLength)
 
@@ -196,18 +212,21 @@ macro(concrete_project PROJECT_NAME)
             set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK PROPERTY VALUE ${tweak})
             set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "${CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR}.${CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH}.${CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK}")
         endif(${versionListLength} GREATER 3)
-
-        if(${CONCRETE_PROJECT_SOFTWARE_VERSION} STREQUAL "")
-            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR PROPERTY VALUE 0)
-            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR PROPERTY VALUE 0)
-            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH PROPERTY VALUE 1)
-            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK PROPERTY VALUE 0)
-            set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "0.0.1.0")
-        endif()
-
-        list(APPEND projectParameterList VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION})
     endif(_CONCRETE_PROJECT_VERSION)
 
+    # 0.0.1.0 as default
+    if("_${CONCRETE_PROJECT_SOFTWARE_VERSION}" STREQUAL "_")
+        set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MAJOR PROPERTY VALUE 0)
+        set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_MINOR PROPERTY VALUE 0)
+        set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_PATCH PROPERTY VALUE 1)
+        set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION_TWEAK PROPERTY VALUE 0)
+        set_property(CACHE CONCRETE_PROJECT_SOFTWARE_VERSION PROPERTY VALUE "0.0.1.0")
+    endif()
+
+    # make project parameters version part
+    list(APPEND projectParameterList VERSION ${CONCRETE_PROJECT_SOFTWARE_VERSION})
+
+    # project description
     if (_CONCRETE_PROJECT_DESCRIPTION)
         set_property(CACHE CONCRETE_PROJECT_DESCRIPTION PROPERTY VALUE ${_CONCRETE_PROJECT_DESCRIPTION})
         list(APPEND projectParameterList DESCRIPTION ${CONCRETE_PROJECT_DESCRIPTION})
@@ -215,15 +234,17 @@ macro(concrete_project PROJECT_NAME)
 
     if (_CONCRETE_PROJECT_HOMEPAGE_URL)
         set_property(CACHE CONCRETE_PROJECT_HOMEPAGE_URL PROPERTY VALUE ${_CONCRETE_PROJECT_HOMEPAGE_URL})
+        
+        __concrete_camke_version(cmakeVersion)
 
-        set(cmakeVersion "$CACHE{CMAKE_CACHE_MAJOR_VERSION}.$CACHE{CMAKE_CACHE_MINOR_VERSION}.$CACHE{CMAKE_CACHE_PATCH_VERSION}")
-
+        # only cmake version greater than 3.12.4 support the HOMEPAGE_URL parameter
         if (${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
             list(APPEND projectParameterList HOMEPAGE_URL ${CONCRETE_PROJECT_HOMEPAGE_URL})
-        endif(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")        
+        endif(${cmakeVersion} VERSION_GREATER_EQUAL "3.12.4")
     endif(_CONCRETE_PROJECT_HOMEPAGE_URL)
 
     # project command for languages, version, description, homeurl
+    # cmake project second call to generate turely project information
     project(${CONCRETE_PROJECT_NAME} ${projectParameterList})
     # end set project 
 
@@ -242,41 +263,52 @@ macro(concrete_project PROJECT_NAME)
         set_property(CACHE CONCRETE_PROJECT_ROOT_DIRECTORY PROPERTY VALUE ${CMAKE_HOME_DIRECTORY})
     endif(_CONCRETE_PROJECT_ROOT_DIR)
 
-    #[[ begin set output dir ]] ########################################
-    set(runtimeOutputDir)
+    #[[ begin set output dir ]]
 
+    # set generate folder name
+    # if use default, will add compiler target as postfix
+    if(_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX)
+        set(folderPostfix "/${CONCRETE_PROJECT_COMPILER_TARGET}")
+    endif(_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX)
+    
+    # if user defined, use it as postfix
+    if(_CONCRETE_PROJECT_FOLDER_POSTFIX)
+        set(folderPostfix "/${_CONCRETE_PROJECT_FOLDER_POSTFIX}")        
+    endif(_CONCRETE_PROJECT_FOLDER_POSTFIX)
+    # or folderPostfix as empty
+    
+    # set runtime binary file output directory
     if(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
         set(runtimeOutputDir ${_CONCRETE_PROJECT_BINARY_OUTPUT_DIR})
     else(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
         set(runtimeOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/bin)
     endif(_CONCRETE_PROJECT_BINARY_OUTPUT_DIR)
 
-    if (${_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX})
-        set(runtimeOutputDir ${runtimeOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    endif(${_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX})
-
-    set_property(CACHE CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY PROPERTY VALUE ${runtimeOutputDir})
-
+    # set static binary file output directory
     if(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
         set(libraryOutputDir ${_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR})
     else(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
         set(libraryOutputDir ${CONCRETE_PROJECT_ROOT_DIRECTORY}/lib)
     endif(_CONCRETE_PROJECT_LIBRARY_OUTPUT_DIR)
 
-    if (${_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX})
-        set(libraryOutputDir ${libraryOutputDir}/${CONCRETE_PROJECT_COMPILER_TARGET})
-    endif(${_CONCRETE_PROJECT_USE_DEFAULT_FOLDER_POSTFIX})
+    # set to global cache property
+    set_property(CACHE CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY  PROPERTY VALUE ${runtimeOutputDir}${folderPostfix})
+    set_property(CACHE CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY PROPERTY VALUE ${libraryOutputDir}${folderPostfix})
 
-    set_property(CACHE CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY PROPERTY VALUE ${libraryOutputDir})
-
+    # set cmake variable to take effect
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_BINARY_OUTPUT_DIRECTORY})        
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CONCRETE_PROJECT_LIBRARY_OUTPUT_DIRECTORY})
 
-    #[[ end set output dir ]] ########################################
+    # unset temp variable
+    unset(runtimeOutputDir)
+    unset(libraryOutputDir)
+    unset(folderPostfix)
+    #[[ end set output dir ]]
 
     # begin set build types
     if(_CONCRETE_PROJECT_CONFIGURATION_TYPES)
+        # get enabled languages to generate global flag properties
         get_property(languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 
         foreach(var ${_CONCRETE_PROJECT_CONFIGURATION_TYPES})
@@ -297,6 +329,7 @@ macro(concrete_project PROJECT_NAME)
             endforeach(lang ${languages})            
         endforeach(var ${_CONCRETE_PROJECT_CONFIGURATION_TYPES})
 
+        # set cmake build-in property value
         if(CMAKE_CONFIGURATION_TYPES)
             set_property(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY VALUE "${_CONCRETE_PROJECT_CONFIGURATION_TYPES}")
             set_property(CACHE CMAKE_CONFIGURATION_TYPES PROPERTY HELPSTRING "configuration types")            
@@ -312,10 +345,8 @@ macro(concrete_project PROJECT_NAME)
     endif(_CONCRETE_PROJECT_CONFIGURATION_TYPES)
     # end set build types
 
-    #[[
-        add a interface target named of ConcreteInterface
-        for as properties interface for other target
-    #]]
+    # add a interface target named of ConcreteInterface
+    # for as properties interface for other target
     concrete_target(
         ConcreteInterface
         
@@ -324,18 +355,36 @@ macro(concrete_project PROJECT_NAME)
         CREATE_ONLY
     )
 
+    # set install property
     concrete_install(
         TARGETS ConcreteInterface 
         DEFAULT_EXPORT
     )
     
+    # clear invalid cache
     __concrete_clear_cache()
 endmacro(concrete_project)
+################## function end ############################
 
+################## function start ############################
+# set global target configure
+# use this target to instead cmake global setting 
 function(concrete_global_target_configure)
     set(options)
+
     set(singleValueKey)
-    set(mulitValueKey PROPERTIES LINK_DIRECTORIES LINK_LIBRARIES LINK_OPTIONS INCLUDE_DIRECTORIES COMPILE_OPTIONS COMPILE_FEATURES COMPILE_DEFINITIONS SOURCES)
+
+    set(mulitValueKey 
+        PROPERTIES          # for set_target_properties, set global project properties
+        LINK_DIRECTORIES    # for target_link_directories, set global link directories
+        LINK_LIBRARIES      # for target_link_libraries, set global link libraries
+        LINK_OPTIONS        # for target_link_options, set global link options
+        INCLUDE_DIRECTORIES # for target_include_directories, set global include directories
+        COMPILE_OPTIONS     # for target_compile_options, set global compiler options
+        COMPILE_FEATURES    # for target_compile_features, set global compiler features
+        COMPILE_DEFINITIONS # for target_compile_definitions, set global compiler marco
+        SOURCES             # for target_sources, set sources list
+        )
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -385,11 +434,24 @@ function(concrete_global_target_configure)
         target_sources(${targetName} INTERFACE ${_CONCRETE_SOURCES})
     endif(_CONCRETE_SOURCES)
 endfunction(concrete_global_target_configure)
+################## function end ############################
 
+################## function start ############################
+# cmake configure file opertor warpper
 function(concrete_configure_file)
-    set(options COPY_ONLY)
-    set(singleValueKey SOURCE_FILE_PATH DEST_FILE_PATH NEWLINE_STYLE)
-    set(mulitValueKey COPY_OPTIONS)
+    set(options 
+        COPY_ONLY   # use as COPYONLY
+        )
+
+    set(singleValueKey 
+        SOURCE_FILE_PATH    # source file path, must set
+        DEST_FILE_PATH      # dest file path, must set
+        NEWLINE_STYLE       # use as 
+        )
+
+    set(mulitValueKey 
+        COPY_OPTIONS
+        )
 
     CMAKE_PARSE_ARGUMENTS(
         _CONCRETE
@@ -400,15 +462,15 @@ function(concrete_configure_file)
     )
 
     if(NOT _CONCRETE_SOURCE_FILE_PATH)
-        concrete_error("Must set source file path")
+        concrete_error("must set source file path")
     else()
         if(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
-            concrete_error("Source file not exists")
+            concrete_error("source file not exists")
         endif(NOT EXISTS ${_CONCRETE_SOURCE_FILE_PATH})
     endif()
 
     if(NOT _CONCRETE_DEST_FILE_PATH)
-        concrete_error("Must set dest file path")
+        concrete_error("must set dest file path")
     endif(NOT _CONCRETE_DEST_FILE_PATH)
 
     set(sourceFile ${_CONCRETE_SOURCE_FILE_PATH})
@@ -416,7 +478,7 @@ function(concrete_configure_file)
 
     if(${_CONCRETE_COPY_ONLY})
         if(_CONCRETE_NEWLINE_STYLE)
-            concrete_warning("Newline style option may not be used with CopyOnly")
+            concrete_warning("newline style option may not be used with CopyOnly")
         endif(_CONCRETE_NEWLINE_STYLE)
 
         CONFIGURE_FILE(
@@ -427,7 +489,6 @@ function(concrete_configure_file)
         RETURN()
     endif(${_CONCRETE_COPY_ONLY})
 
-    set(newlineStyle)
     if (_CONCRETE_NEWLINE_STYLE)
         if (${_CONCRETE_NEWLINE_STYLE} STREQUAL "UNIX")
             set(newlineStyle NEWLINE_STYLE "UNIX") 
@@ -450,7 +511,6 @@ function(concrete_configure_file)
         endif(${_CONCRETE_NEWLINE_STYLE} STREQUAL "CRLF")        
     endif(_CONCRETE_NEWLINE_STYLE)
 
-    set(copyOptions)
     if (_CONCRETE_COPY_OPTIONS)
         foreach(var ${_CONCRETE_COPY_OPTIONS})
             if(${var} STREQUAL "EscapeQuotes")
@@ -470,7 +530,12 @@ function(concrete_configure_file)
         ${newlineStyle}
     )
 endfunction(concrete_configure_file)
+################## function end ############################
 
+################## function start ############################
+# set global properties
+# useful to setting cmake global properties
+# some magic will use this function
 function(concrete_set_global_properties)
     set(options)
     set(singleValueKey)
@@ -487,7 +552,8 @@ function(concrete_set_global_properties)
     if (_CONCRETE_PROPERTIES)
         set(index 0)
         list(LENGTH _CONCRETE_PROPERTIES length)
-
+        
+        # loop setting every of property
         WHILE(${index} LESS ${length})
             list(GET _CONCRETE_PROPERTIES ${index} key)
 
@@ -501,7 +567,4 @@ function(concrete_set_global_properties)
         ENDWHILE(${index} LESS ${length})
     endif(_CONCRETE_PROPERTIES)
 endfunction(concrete_set_global_properties)
-
-function(concrete_set_vs_startup_project TARGET)
-    set_property(DIRECTORY ${CMAKE_HOME_DIRECTORY} PROPERTY VS_STARTUP_PROJECT ${TARGET})
-endfunction(concrete_set_vs_startup_project)
+################## function end ############################

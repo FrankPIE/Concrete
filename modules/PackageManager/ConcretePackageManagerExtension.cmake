@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2020 MadStrawberry
+# Copyright (c) 2023 MadStrawberry
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -21,37 +21,9 @@
 
 include_guard(GLOBAL)
 
-function(concrete_status)
-    message(STATUS ${ARGN})
-endfunction(concrete_status)
-
-function(concrete_notice)
-    message(NOTICE ${ARGN})
-endfunction(concrete_notice)
-
-function(concrete_error)
-    message(FATAL_ERROR ${ARGN})
-endfunction(concrete_error)
-
-function(concrete_error_tip)
-    message(SEND_ERROR ${ARGN})    
-endfunction(concrete_error_tip)
-
-function(concrete_warning)
-    message(WARNING ${ARGN})    
-endfunction(concrete_warning)
-
-function(concrete_debug)
-    message(DEBUG ${ARGN})
-endfunction(concrete_debug)
-
-function(concrete_trace)
-    message(TRACE ${ARGN})
-endfunction(concrete_trace)
-
-function(concrete_verbose)
-    message(VERBOSE ${ARGN})
-endfunction(concrete_verbose)
-
-
-
+include( Extension/ConcreteBoostPackage )
+include( Extension/ConcreteGTestPackage )
+include( Extension/ConcreteZLibPackage )
+include( Extension/ConcreteProtobufPackage )
+include( Extension/ConcreteOpenBLASPackage )
+include( Extension/ConcreteOpenCVPackage )

@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2019 MadStrawberry
+# Copyright (c) 2023 MadStrawberry
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -19,35 +19,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.10.3)
-
 include_guard(GLOBAL)
 
-include(Extension/cotire/CMake/cotire)
-
-# Concrete modules
-include( ConcreteVariables )
-include( ConcreteProperties )
-
-# Concrete Unitity modules
-include( Unitity/ConcreteDebug )
-include( Unitity/ConcreteFileHelper )
-include( Unitity/ConcreteStringHelper )
-include( Unitity/ConcreteNet )
-include( Unitity/ConcreteOption )
-
-# Concrete Envionment modules
-include( Environment/ConcreteDetectSystemInfo )
-
-# Concrete Project modules
-include( Project/ConcreteSource )
-include( Project/ConcreteExtensionUnityBuild )
-include( Project/ConcreteTarget )
-include( Project/ConcreteDirectory )
-include( Project/ConcreteInstall )
-include( Project/ConcreteProject )
-include( Project/ConcreteBuildType )
-
-# Concrete Package Manager
-include( PackageManager/ConcretePackageManager )
-include( PackageManager/ConcretePackageManagerExtension )
+################## function start ############################
+# set visual studio project startup traget
+function(concrete_vs_set_startup_project TARGET)
+    set_property(DIRECTORY ${CMAKE_HOME_DIRECTORY} PROPERTY VS_STARTUP_PROJECT ${TARGET})
+endfunction(concrete_vs_set_startup_project)
+################## function end ############################
